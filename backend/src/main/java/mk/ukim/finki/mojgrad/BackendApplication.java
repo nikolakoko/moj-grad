@@ -1,4 +1,4 @@
-package finki.ukim.mk.backend;
+package mk.ukim.finki.mojgrad;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

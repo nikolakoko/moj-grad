@@ -1,4 +1,4 @@
-package finki.ukim.mk.backend.config;
+package mk.ukim.finki.mojgrad.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Configuration;
