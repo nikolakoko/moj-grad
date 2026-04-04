@@ -30,17 +30,7 @@ create table departments
     modified_at timestamp not null
 );
 
-create table admins
-(
-    id          bigserial primary key,
-    email       text      not null unique,
-    password    text      not null,
-    role        role_type not null,
-    created_at  timestamp not null,
-    modified_at timestamp not null
-);
-
-create table administration_workers
+create table users
 (
     id            bigserial primary key,
     name          text             not null,
@@ -49,11 +39,11 @@ create table administration_workers
     role          role_type        not null,
     enabled       boolean          not null default false,
     user_status   user_status_type not null,
-    department_id bigint           not null,
+    department_id bigint,
     created_at    timestamp        not null,
     modified_at   timestamp        not null,
 
-    constraint fk_worker_department
+    constraint fk_user_department
         foreign key (department_id) references departments (id)
 );
 
@@ -75,9 +65,9 @@ create table complaints
         foreign key (department_id) references departments (id)
 );
 
-create index idx_worker_department on administration_workers (department_id);
 create index idx_complaint_department on complaints (department_id);
-
-create index idx_worker_email on administration_workers (email);
 create index idx_complaint_status on complaints (complaint_status);
 create index idx_complaint_priority on complaints (priority);
+create index idx_user_email      on users (email);
+create index idx_user_role       on users (role);
+create index idx_user_department on users (department_id);
