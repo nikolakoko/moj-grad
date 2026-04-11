@@ -1,12 +1,17 @@
 package mk.ukim.finki.mojgrad.exception;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 public class ErrorResponse {
 
-    private String message;
-    private int status;
-    private LocalDateTime timestamp;
+    private final String message;
+    private final int status;
+    private final LocalDateTime timestamp;
 
     public ErrorResponse(String message, int status) {
         this.message = message;
@@ -14,7 +19,4 @@ public class ErrorResponse {
         this.timestamp = LocalDateTime.now();
     }
 
-    public String getMessage() { return message; }
-    public int getStatus() { return status; }
-    public LocalDateTime getTimestamp() { return timestamp; }
 }
