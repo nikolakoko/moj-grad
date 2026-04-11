@@ -1,5 +1,7 @@
 package mk.ukim.finki.mojgrad.exception;
 
+import mk.ukim.finki.mojgrad.exception.exceptions.BadRequestException;
+import mk.ukim.finki.mojgrad.exception.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

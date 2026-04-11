@@ -1,4 +1,4 @@
-package mk.ukim.finki.mojgrad.exception;
+package mk.ukim.finki.mojgrad.exception.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 
