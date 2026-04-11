@@ -26,12 +26,10 @@ public class Complaint extends BaseEntity {
     private Double longitude;
 
     @Enumerated(EnumType.STRING)
-    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     private ComplaintStatus complaintStatus;
 
     @Enumerated(EnumType.STRING)
-    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     private Priority priority;
 

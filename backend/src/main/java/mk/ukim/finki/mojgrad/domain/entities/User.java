@@ -26,7 +26,6 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     private Role role;
 
@@ -34,7 +33,6 @@ public class User extends BaseEntity {
     private Boolean enabled;
 
     @Enumerated(EnumType.STRING)
-    @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(nullable = false)
     private UserStatus userStatus;
 

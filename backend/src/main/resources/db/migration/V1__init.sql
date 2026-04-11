@@ -1,27 +1,3 @@
-create type role_type as enum (
-    'CITIZEN',
-    'ADMINISTRATION_WORKER',
-    'ADMIN'
-);
-
-create type user_status_type as enum (
-    'INVITED',
-    'REGISTERED'
-);
-
-create type complaint_status_type as enum (
-    'PENDING',
-    'IN_PROGRESS',
-    'RESOLVED',
-    'REJECTED'
-);
-
-create type priority_type as enum (
-    'LOW',
-    'MEDIUM',
-    'HIGH'
-);
-
 create table departments
 (
     id          bigserial primary key,
@@ -36,9 +12,9 @@ create table users
     name          text             not null,
     email         text             not null unique,
     password      text             not null,
-    role          role_type        not null,
+    role          varchar(50)      not null,
     enabled       boolean          not null default false,
-    user_status   user_status_type not null,
+    user_status   varchar(50)      not null,
     department_id bigint,
     created_at    timestamp        not null,
     modified_at   timestamp        not null,
@@ -54,8 +30,8 @@ create table complaints
     description      text,
     latitude         double precision,
     longitude        double precision,
-    complaint_status complaint_status_type not null,
-    priority         priority_type         not null,
+    complaint_status varchar(50)           not null,
+    priority         varchar(50)           not null,
     photo            text,
     department_id    bigint                not null,
     created_at       timestamp             not null,
