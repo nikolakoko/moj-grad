@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toast } from "@/components/ui/toast";
+import Toaster from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
@@ -14,7 +14,7 @@ import AddWorkerPage from "./pages/admin/AddWorkerPage";
 function App() {
   return (
     <AuthProvider>
-      <Toast />
+      <Toaster />
       <Sonner />
       <BrowserRouter>
         <Routes>
