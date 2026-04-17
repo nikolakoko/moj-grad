@@ -1,7 +1,7 @@
 package mk.ukim.finki.mojgrad.web;
 
 import mk.ukim.finki.mojgrad.constants.ApiConstants;
-import mk.ukim.finki.mojgrad.service.ComplaintService;
+import mk.ukim.finki.mojgrad.service.intf.ComplaintService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

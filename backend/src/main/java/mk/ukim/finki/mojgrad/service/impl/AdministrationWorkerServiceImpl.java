@@ -1,11 +1,11 @@
 package mk.ukim.finki.mojgrad.service.impl;
 
-import mk.ukim.finki.mojgrad.service.UserService;
 import lombok.RequiredArgsConstructor;
+import mk.ukim.finki.mojgrad.service.intf.AdministrationWorkerService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AdministrationWorkerServiceImpl implements AdministrationWorkerService {
     // TODO: implement methods
 }

@@ -1,6 +1,6 @@
 package mk.ukim.finki.mojgrad.service.impl;
 
-import mk.ukim.finki.mojgrad.service.ComplaintService;
+import mk.ukim.finki.mojgrad.service.intf.ComplaintService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

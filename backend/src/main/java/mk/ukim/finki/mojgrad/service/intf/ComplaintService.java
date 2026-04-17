@@ -1,4 +1,4 @@
-package mk.ukim.finki.mojgrad.service;
+package mk.ukim.finki.mojgrad.service.intf;
 
 public interface ComplaintService {
     // TODO: define methods
