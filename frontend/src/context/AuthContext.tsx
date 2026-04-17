@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 import { User } from "@/types";
+import type { UserRole } from "@/types";
 
 interface JwtPayload {
   id: string;
@@ -60,8 +61,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  
+   //DEMO
+  /*const login = async (email: string, password: string) => {
+  let fakeUser;
+
+  if (email === "admin@test.com") {
+    fakeUser = {
+      id: "1",
+      name: "Admin Demo",
+      email,
+      role: "ADMIN" as UserRole,
+      enabled: true,
+    };
+  } else {
+    fakeUser = {
+      id: "2",
+      name: "Worker Demo",
+      email,
+      role: "ADMINISTRATION_WORKER" as UserRole,
+      enabled: true,
+    };
+  }
+
+  localStorage.setItem("token", "demo-token");
+  localStorage.setItem("user", JSON.stringify(fakeUser));
+
+  setUser(fakeUser);
+  return true;
+};
+*/
+
   //  LOGIN
-  const login = async (email: string, password: string): Promise<boolean> => {
+    const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -100,7 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   //  LOGOUT
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
+    
   };
 
   return (
