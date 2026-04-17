@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.JWTConstants;
 import mk.ukim.finki.mojgrad.domain.entities.User;
 import mk.ukim.finki.mojgrad.service.intf.JWTService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,9 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JWTServiceImpl implements JWTService {
+
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Override
     public String extractUsername(String token) {
@@ -36,7 +40,7 @@ public class JWTServiceImpl implements JWTService {
 
     @Override
     public Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JWTConstants.SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
