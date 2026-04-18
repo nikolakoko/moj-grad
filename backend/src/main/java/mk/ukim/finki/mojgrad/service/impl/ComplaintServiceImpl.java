@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
 import mk.ukim.finki.mojgrad.domain.entities.Department;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
+import mk.ukim.finki.mojgrad.domain.enums.Priority;
 import mk.ukim.finki.mojgrad.dto.request.ComplaintRequest;
 import mk.ukim.finki.mojgrad.dto.response.ComplaintResponse;
 import mk.ukim.finki.mojgrad.dto.response.ComplaintTrackingResponse;
@@ -35,7 +36,7 @@ public class ComplaintServiceImpl implements ComplaintService {
         complaint.setDescription(request.description());
         complaint.setLatitude(request.latitude());
         complaint.setLongitude(request.longitude());
-        complaint.setPriority(request.priority());
+        complaint.setPriority(Priority.LOW); //hard coded for now, later will be determined with AI
         complaint.setPhoto(request.photo());
         complaint.setDepartment(department);
         complaint.setComplaintStatus(ComplaintStatus.PENDING);
