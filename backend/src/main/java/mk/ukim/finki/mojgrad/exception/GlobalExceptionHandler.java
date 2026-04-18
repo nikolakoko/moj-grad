@@ -4,7 +4,12 @@ import mk.ukim.finki.mojgrad.exception.exceptions.global.*;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -78,5 +83,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGlobal() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GlobalExceptionMessages.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException exception) {
+
+        Map<String, String> errors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        Collectors.mapping(
+                                error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
+                                Collectors.collectingAndThen(
+                                        Collectors.joining("; "),
+                                        msg -> msg.isBlank() ? "Invalid value" : msg
+                                )
+                        )
+                ));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }

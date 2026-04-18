@@ -1,5 +1,6 @@
 package mk.ukim.finki.mojgrad.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.ApiConstants;
 import mk.ukim.finki.mojgrad.dto.request.auth.LoginRequestDTO;
@@ -20,7 +21,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginRequestDTO loginRequestDTO) {
         return new ResponseEntity<>(authService.login(loginRequestDTO), HttpStatus.OK);
     }
 }
