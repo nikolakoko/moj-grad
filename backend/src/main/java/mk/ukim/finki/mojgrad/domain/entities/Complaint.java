@@ -2,12 +2,10 @@ package mk.ukim.finki.mojgrad.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
 import mk.ukim.finki.mojgrad.domain.enums.Priority;
-import org.hibernate.annotations.JdbcType;
-import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 @Getter
 @Setter
@@ -17,6 +15,9 @@ import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 public class Complaint extends BaseEntity {
     @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false)
+    private String trackingToken;
 
     @Column(columnDefinition = "TEXT")
     private String description;
