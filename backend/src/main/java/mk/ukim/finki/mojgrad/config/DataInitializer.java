@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -83,6 +84,7 @@ public class DataInitializer implements CommandLineRunner {
 
             Complaint c1 = new Complaint();
             c1.setTitle("Дупка на улица Партизанска");
+            c1.setTrackingToken(UUID.randomUUID().toString());
             c1.setDescription("Голема дупка која предизвикува оштетување на возилата во близина на центарот на градот.");
             c1.setLatitude(41.9989);
             c1.setLongitude(21.4219);
@@ -93,6 +95,7 @@ public class DataInitializer implements CommandLineRunner {
 
             Complaint c2 = new Complaint();
             c2.setTitle("Уличното осветлување не работи");
+            c2.setTrackingToken(UUID.randomUUID().toString());
             c2.setDescription("Три последователни улични светилки се исклучени на булевар Илинден.");
             c2.setLatitude(42.0066);
             c2.setLongitude(21.4122);
@@ -103,6 +106,7 @@ public class DataInitializer implements CommandLineRunner {
 
             Complaint c3 = new Complaint();
             c3.setTitle("Преполни контејнери за отпад");
+            c3.setTrackingToken(UUID.randomUUID().toString());
             c3.setDescription("Контејнерите кај битпазар не се испразнети повеќе од една недела.");
             c3.setLatitude(42.0035);
             c3.setLongitude(21.4390);
