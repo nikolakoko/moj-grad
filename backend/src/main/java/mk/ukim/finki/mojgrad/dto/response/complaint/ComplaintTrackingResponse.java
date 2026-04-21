@@ -1,4 +1,4 @@
-package mk.ukim.finki.mojgrad.dto.response;
+package mk.ukim.finki.mojgrad.dto.response.complaint;
 
 import lombok.Builder;
 

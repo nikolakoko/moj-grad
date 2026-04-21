@@ -45,9 +45,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/favicon.ico",
-                                ApiConstants.COMPLAINTS,
-                                ApiConstants.COMPLAINTS + "by-token",
-                                ApiConstants.COMPLAINTS + "/{id}")
+                                ApiConstants.COMPLAINTS + "/by-token",
+                                ApiConstants.COMPLAINTS + "/create")
                         .permitAll()
                         .requestMatchers(ApiConstants.ADMINISTRATION_WORKER + "/**")
                         .hasRole("ADMINISTRATION_WORKER")

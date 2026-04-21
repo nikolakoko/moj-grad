@@ -1,8 +1,8 @@
 package mk.ukim.finki.mojgrad.mapper;
 
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintResponse;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintTrackingResponse;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
 
 public class MyCityExtensions {
 
