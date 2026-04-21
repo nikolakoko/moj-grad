@@ -1,4 +1,4 @@
-package mk.ukim.finki.mojgrad.dto.response;
+package mk.ukim.finki.mojgrad.dto.response.complaint;
 
 import lombok.Builder;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
@@ -18,4 +18,5 @@ public record ComplaintResponse(
         String photo,
         String departmentName,
         LocalDateTime createdAt
-) {}
+) {
+}

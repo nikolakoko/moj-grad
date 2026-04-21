@@ -1,8 +1,10 @@
 package mk.ukim.finki.mojgrad.mapper;
 
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintResponse;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintTrackingResponse;
+import mk.ukim.finki.mojgrad.domain.entities.Department;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
+import mk.ukim.finki.mojgrad.dto.response.department.DepartmentResponse;
 
 public class MyCityExtensions {
 
@@ -25,6 +27,13 @@ public class MyCityExtensions {
         return ComplaintTrackingResponse.builder()
                 .title(complaint.getTitle())
                 .token(complaint.getTrackingToken())
+                .build();
+    }
+
+    public static DepartmentResponse departmentToDepartmentResponse(Department department) {
+        return DepartmentResponse.builder()
+                .id(department.getId())
+                .name(department.getName())
                 .build();
     }
 }
