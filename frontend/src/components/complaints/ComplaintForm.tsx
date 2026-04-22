@@ -127,7 +127,7 @@ function MapPicker({ onLocationSelect, selectedLat, selectedLng }: MapPickerProp
  
 // ─── Complaint Form ─────────────────────────────────────────────────────────────
  
-export function ComplaintForm() {
+export function ComplaintForm({ onSubmitted, onReset: onResetCallback }: { onSubmitted?: () => void; onReset?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [complaintToken, setComplaintToken] = useState('');
@@ -187,6 +187,7 @@ export function ComplaintForm() {
       setComplaintToken(response.token);
       setSubmitted(true);
       toast.success('Жалбата е успешно поднесена!');
+      onSubmitted?.();
     } catch (err: any) {
       toast.error(err?.message || 'Грешка при поднесување на жалба');
     } finally {
@@ -203,6 +204,7 @@ export function ComplaintForm() {
     setLongitude(null);
     setSubmitted(false);
     setComplaintToken('');
+    onResetCallback?.();
   };
  
   // ── Success screen ──
@@ -303,37 +305,45 @@ export function ComplaintForm() {
           {/* Image */}
           <div className="space-y-2">
             <Label>Прикачи слика (опционално)</Label>
-            {imagePreview ? (
-              <div className="relative">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full max-h-48 object-cover rounded-xl border border-gray-200"
-                />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow hover:bg-gray-100 transition"
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-            ) : (
-              <label
-                htmlFor="image"
-                className="flex items-center gap-2 w-fit px-4 py-2 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 transition text-sm"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Избери слика</span>
-                <input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
+            <label
+              htmlFor="image"
+              className={`block relative w-full rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition ${
+                imagePreview
+                  ? 'border-gray-200 bg-gray-50'
+                  : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
+              }`}
+              style={{ height: '280px' }}
+            >
+              {imagePreview ? (
+                <>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={e => { e.preventDefault(); removeImage(); }}
+                    className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow hover:bg-gray-100 transition"
+                  >
+                    <X className="w-4 h-4 text-gray-600" />
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-400 select-none">
+                  <Upload className="w-8 h-8" />
+                  <span className="text-sm font-medium">Кликни за да избереш слика</span>
+                  <span className="text-xs">PNG, JPG, WEBP...</span>
+                </div>
+              )}
+              <input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
           </div>
  
           <Button

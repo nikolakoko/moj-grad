@@ -132,7 +132,7 @@ export function TokenSearchModal({ isOpen, onClose }: TokenSearchModalProps) {
                 id="modal-token"
                 value={token}
                 onChange={e => setToken(e.target.value)}
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                placeholder="xxxxxxxxxx"
                 className="text-sm tracking-wider font-mono"
                 required
               />
@@ -195,7 +195,7 @@ export function TokenSearchModal({ isOpen, onClose }: TokenSearchModalProps) {
                           ? foundComplaint.photo
                           : `data:image/jpeg;base64,${foundComplaint.photo}`}
                         alt={foundComplaint.title}
-                        className="rounded-lg max-h-64 w-full object-cover"
+                        className="rounded-lg w-full object-contain"
                       />
                     </div>
                   )}

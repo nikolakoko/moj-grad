@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
@@ -11,10 +12,18 @@ import DocumentUploadPage from "./pages/dashboard/DocumentUploadPage.tsx";
 import DocumentGeneratePage from "./pages/dashboard/DocumentGeneratePage.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AddWorkerPage from "./pages/admin/AddWorkerPage.tsx";
-
+ 
+function ScrollToTop() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+  return null;
+}
+ 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <ComplaintProvider>
           <Toaster />
@@ -34,5 +43,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
+ 
 export default App;

@@ -4,15 +4,16 @@ import { ComplaintForm } from '@/components/complaints/ComplaintForm';
 import { TokenSearchModal } from '@/components/complaints/TokenSearchModal';
 import { CheckCircle, Users, Clock, HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
+ 
 export default function HomePage() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
-
+  const [complaintSubmitted, setComplaintSubmitted] = useState(false);
+ 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <TokenSearchModal isOpen={isTokenModalOpen} onClose={() => setIsTokenModalOpen(false)} />
-
+ 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,11 +27,9 @@ export default function HomePage() {
                 <button onClick={() => setIsTokenModalOpen(true)} className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
                   Пребарај по токен
                 </button>
-                <a href="#help">
-                  <button className="bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 transition border border-blue-500">
+                <button onClick={() => document.getElementById('help')?.scrollIntoView({ behavior: 'smooth' })} className="bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 transition border border-blue-500">
                     Дознај повеќе
                   </button>
-                </a>
               </div>
             </div>
             <div className="hidden lg:block">
@@ -43,7 +42,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+ 
       {/* Stats Section */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,20 +65,22 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+ 
       {/* Complaint Form Section */}
       <section id="complaint" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Поднеси жалба</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Пополнете ја формата подолу за да поднесете жалба. Нашиот AI систем автоматски ќе ја класифицира и насочи кон соодветниот оддел.
-            </p>
-          </div>
-          <ComplaintForm />
+          {!complaintSubmitted && (
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Поднеси жалба</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Пополнете ја формата подолу за да поднесете жалба. Нашиот AI систем автоматски ќе ја класифицира и насочи кон соодветниот оддел.
+              </p>
+            </div>
+          )}
+          <ComplaintForm onSubmitted={() => setComplaintSubmitted(true)} onReset={() => setComplaintSubmitted(false)} />
         </div>
       </section>
-
+ 
       {/* Help Section */}
       <section id="help" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -106,7 +107,7 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
-
+ 
           <div className="mt-12 bg-blue-50 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">За административни работници</h3>
             <p className="text-gray-700 mb-4">Како административен работник, имате пристап до централизиран панел каде можете:</p>
@@ -127,7 +128,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+ 
       {/* Contact Section */}
       <section id="contact" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -142,7 +143,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+ 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
