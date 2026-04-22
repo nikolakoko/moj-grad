@@ -16,7 +16,7 @@ public class Complaint extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String trackingToken;
 
     @Column(columnDefinition = "TEXT")
