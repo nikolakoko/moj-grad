@@ -3,12 +3,11 @@ package mk.ukim.finki.mojgrad.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
-import mk.ukim.finki.mojgrad.domain.entities.Department;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
 import mk.ukim.finki.mojgrad.domain.enums.Priority;
-import mk.ukim.finki.mojgrad.dto.request.ComplaintRequest;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintResponse;
-import mk.ukim.finki.mojgrad.dto.response.ComplaintTrackingResponse;
+import mk.ukim.finki.mojgrad.dto.request.complaint.ComplaintRequest;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
+import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ResourceNotFoundException;
 import mk.ukim.finki.mojgrad.mapper.MyCityExtensions;
 import mk.ukim.finki.mojgrad.repository.ComplaintRepository;
@@ -47,9 +46,6 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public ComplaintTrackingResponse create(ComplaintRequest request) {
-        Department department = departmentRepository.findById(request.departmentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Одделот не е пронајден!"));
-
         Priority priority = classifyPriority(request.title(), request.description());
 
         Complaint complaint = new Complaint();
@@ -60,7 +56,7 @@ public class ComplaintServiceImpl implements ComplaintService {
         complaint.setLongitude(request.longitude());
         complaint.setPriority(priority);
         complaint.setPhoto(request.photo());
-        complaint.setDepartment(department);
+        complaint.setDepartment(departmentRepository.findByName("Хигиена")); //hard coded for now, later will be determined with AI
         complaint.setComplaintStatus(ComplaintStatus.PENDING);
 
         return MyCityExtensions.complaintToTrackingResponse(complaintRepository.save(complaint));
