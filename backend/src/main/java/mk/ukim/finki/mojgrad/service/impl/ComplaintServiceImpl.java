@@ -3,8 +3,10 @@ package mk.ukim.finki.mojgrad.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
+import mk.ukim.finki.mojgrad.domain.entities.Department;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
 import mk.ukim.finki.mojgrad.domain.enums.Priority;
+import mk.ukim.finki.mojgrad.dto.ClassificationResultDTO;
 import mk.ukim.finki.mojgrad.dto.request.complaint.ComplaintRequest;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
@@ -22,6 +24,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ComplaintServiceImpl implements ComplaintService {
@@ -46,7 +49,14 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public ComplaintTrackingResponse create(ComplaintRequest request) {
-        Priority priority = classifyPriority(request.title(), request.description());
+        List<Department> departments = departmentRepository.findAll();
+
+        ClassificationResultDTO result = classifyComplaint(request.title(), request.description(), departments);
+
+        Department department = departments.stream()
+                .filter(d -> d.getName().equals(result.departmentName()))
+                .findFirst()
+                .orElse(departments.isEmpty() ? null : departments.get(0));
 
         Complaint complaint = new Complaint();
         complaint.setTitle(request.title());
@@ -54,29 +64,38 @@ public class ComplaintServiceImpl implements ComplaintService {
         complaint.setDescription(request.description());
         complaint.setLatitude(request.latitude());
         complaint.setLongitude(request.longitude());
-        complaint.setPriority(priority);
+        complaint.setPriority(result.priority());
         complaint.setPhoto(request.photo());
-        complaint.setDepartment(departmentRepository.findByName("Хигиена")); //hard coded for now, later will be determined with AI
+        complaint.setDepartment(department);
         complaint.setComplaintStatus(ComplaintStatus.PENDING);
 
         return MyCityExtensions.complaintToTrackingResponse(complaintRepository.save(complaint));
     }
 
-    private Priority classifyPriority(String title, String description) {
+
+    private ClassificationResultDTO classifyComplaint(String title, String description, List<Department> departments) {
         try {
+            String departmentNames = departments.stream()
+                    .map(Department::getName)
+                    .collect(Collectors.joining(", "));
+
             String systemPrompt = """
-                    You are a complaint priority classifier for a city management system.
-                    Given a complaint title and description, respond ONLY with a JSON object like:
-                    {"priority": "HIGH"}
+                    You are a complaint classifier for a city management system.
+                    Given a complaint title and description, classify both its priority and the responsible department.
+                    Respond ONLY with a JSON object like:
+                    {"priority": "HIGH", "department": "DepartmentName"}
                     Priority must be one of: LOW, MEDIUM, HIGH
-                    Rules:
+                    Rules for priority:
                     - HIGH: significant infrastructure issues
                     - MEDIUM: moderate issues
                     - LOW: minor issues
+                    The department name must be EXACTLY one of the provided departments.
                     No explanation, no markdown, just the JSON.
                     """;
 
-            String userPrompt = "Title: " + title + "\nDescription: " + description;
+            String userPrompt = "Title: " + title
+                    + "\nDescription: " + description
+                    + "\nAvailable departments: " + departmentNames;
 
             String rawResponse = client.post()
                     .uri("chat/completions")
@@ -94,11 +113,17 @@ public class ComplaintServiceImpl implements ComplaintService {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(rawResponse);
             String content = root.path("choices").get(0).path("message").path("content").asText().trim();
-            JsonNode priorityNode = mapper.readTree(content);
-            return Priority.valueOf(priorityNode.path("priority").asText("LOW"));
+            content = content.replaceAll("(?s)```(?:json)?\\s*", "").trim();
+            JsonNode resultNode = mapper.readTree(content);
+
+            Priority priority = Priority.valueOf(resultNode.path("priority").asText("MEDIUM"));
+            String departmentName = resultNode.path("department").asText();
+
+            return new ClassificationResultDTO(priority, departmentName);
 
         } catch (Exception e) {
-            return Priority.MEDIUM;
+            String fallbackDepartment = departments.isEmpty() ? "" : departments.get(0).getName();
+            return new ClassificationResultDTO(Priority.MEDIUM, fallbackDepartment);
         }
     }
 
