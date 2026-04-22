@@ -77,7 +77,13 @@ export default function HomePage() {
               </p>
             </div>
           )}
-          <ComplaintForm onSubmitted={() => setComplaintSubmitted(true)} onReset={() => setComplaintSubmitted(false)} />
+          <ComplaintForm
+            onSubmitted={() => {
+              setComplaintSubmitted(true);
+              document.getElementById('complaint')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            onReset={() => setComplaintSubmitted(false)}
+          />
         </div>
       </section>
  
