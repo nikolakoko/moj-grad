@@ -1,4 +1,4 @@
-package mk.ukim.finki.mojgrad.exception.exceptions;
+package mk.ukim.finki.mojgrad.exception.exceptions.global;
 
 public class BadRequestException extends RuntimeException {
 

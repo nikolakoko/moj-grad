@@ -1,7 +1,10 @@
 package mk.ukim.finki.mojgrad.domain.enums;
 
 public enum Role {
-    CITIZEN,
     ADMINISTRATION_WORKER,
-    ADMIN
+    ADMIN;
+
+    public String getAuthority() {
+        return "ROLE_" + this.name();
+    }
 }

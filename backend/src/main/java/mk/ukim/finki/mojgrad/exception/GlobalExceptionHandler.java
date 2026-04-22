@@ -1,36 +1,107 @@
 package mk.ukim.finki.mojgrad.exception;
 
-import mk.ukim.finki.mojgrad.exception.exceptions.BadRequestException;
-import mk.ukim.finki.mojgrad.exception.exceptions.ResourceNotFoundException;
+import mk.ukim.finki.mojgrad.exception.exceptions.global.*;
+import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.INVALID_ARGUMENT;
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.ILLEGAL_STATE;
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
+
+    @ExceptionHandler(ResourceGoneException.class)
+    public ResponseEntity<String> handleResourceGone(ResourceGoneException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.RESOURCE_GONE;
+
+        return ResponseEntity.status(HttpStatus.GONE).body(message);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()),
-                HttpStatus.NOT_FOUND
-        );
+    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.RESOURCE_NOT_FOUND;
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<String> handleConflict(ConflictException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.CONFLICT;
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(message);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
-                HttpStatus.BAD_REQUEST
-        );
+    public ResponseEntity<String> handleBadRequest(BadRequestException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.BAD_REQUEST;
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<String> handleStorage(StorageException ex) {
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR.value()),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+    public ResponseEntity<String> handleGlobal() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GlobalExceptionMessages.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException exception) {
+
+        Map<String, String> errors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        Collectors.mapping(
+                                error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
+                                Collectors.collectingAndThen(
+                                        Collectors.joining("; "),
+                                        msg -> msg.isBlank() ? "Invalid value" : msg
+                                )
+                        )
+                ));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }
