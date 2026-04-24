@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { ComplaintForm } from '@/components/complaints/ComplaintForm';
 import { TokenSearchModal } from '@/components/complaints/TokenSearchModal';
-import { CheckCircle, Users, Clock, HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
- 
+
 export default function HomePage() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [complaintSubmitted, setComplaintSubmitted] = useState(false);
- 
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <TokenSearchModal isOpen={isTokenModalOpen} onClose={() => setIsTokenModalOpen(false)} />
- 
+
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,32 +42,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
- 
-      {/* Stats Section */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center space-y-2">
-              <div className="flex justify-center"><CheckCircle className="w-12 h-12 text-green-600" /></div>
-              <h3 className="text-3xl font-bold text-gray-900">1,247</h3>
-              <p className="text-gray-600">Решени жалби</p>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="flex justify-center"><Clock className="w-12 h-12 text-blue-600" /></div>
-              <h3 className="text-3xl font-bold text-gray-900">24h</h3>
-              <p className="text-gray-600">Просечно време на одговор</p>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="flex justify-center"><Users className="w-12 h-12 text-purple-600" /></div>
-              <h3 className="text-3xl font-bold text-gray-900">5,890</h3>
-              <p className="text-gray-600">Задоволни граѓани</p>
-            </div>
-          </div>
-        </div>
-      </section>
- 
+
       {/* Complaint Form Section */}
-      <section id="complaint" className="py-20 bg-gray-50">
+      <section id="complaint" className="py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {!complaintSubmitted && (
             <div className="text-center mb-12">
@@ -86,9 +63,9 @@ export default function HomePage() {
           />
         </div>
       </section>
- 
+
       {/* Help Section */}
-      <section id="help" className="py-20 bg-white">
+      <section id="help" className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <HelpCircle className="w-16 h-16 text-blue-600 mx-auto mb-4" />
@@ -113,30 +90,11 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
- 
-          <div className="mt-12 bg-blue-50 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">За административни работници</h3>
-            <p className="text-gray-700 mb-4">Како административен работник, имате пристап до централизиран панел каде можете:</p>
-            <ul className="space-y-2 text-gray-700">
-              {[
-                'Да ги прегледувате сите жалби од вашиот оддел',
-                'Да ги филтрирате и сортирате жалбите според статус, приоритет и оддел',
-                'Да вршите измени на статус, приоритет и оддел',
-                'Да импортирате жалби преку CSV/Excel документи',
-                'Да генерирате извештаи и експортирате податоци',
-              ].map(item => (
-                <li key={item} className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </section>
- 
+
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
+      <section id="contact" className="py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Контакт информации</h2>
@@ -149,9 +107,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
- 
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center items-center gap-2 mb-4">

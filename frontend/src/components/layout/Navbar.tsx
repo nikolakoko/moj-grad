@@ -23,19 +23,28 @@ export function Navbar() {
             </div>
             <span className="text-xl font-semibold text-gray-900">МојГрад</span>
           </Link>
- 
-          <div className="hidden md:flex items-center gap-8">
-            <button onClick={() => smoothScrollTo('complaint')} className="text-gray-600 hover:text-gray-900 transition">
+
+          <div className="hidden md:flex items-center gap-6">
+            <button
+                onClick={() => smoothScrollTo('complaint')}
+                className="px-2 py-2 text-gray-600 hover:text-gray-900 transition rounded-md hover:bg-gray-100"
+            >
               Поднеси жалба
             </button>
-            <button onClick={() => smoothScrollTo('contact')} className="text-gray-600 hover:text-gray-900 transition">
+            <button
+                onClick={() => smoothScrollTo('contact')}
+                className="px-2 py-2 text-gray-600 hover:text-gray-900 transition rounded-md hover:bg-gray-100"
+            >
               Контакт
             </button>
             <Link to="/login">
-              <Button>Најави се</Button>
+              <Button className="px-2 py-2 rounded-md text-blue-600 hover:bg-gray-100 font-bold transition">
+                Најави се
+              </Button>
             </Link>
           </div>
- 
+
+
           <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
