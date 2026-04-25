@@ -60,7 +60,7 @@ public class ComplaintServiceImpl implements ComplaintService {
 
         Complaint complaint = new Complaint();
         complaint.setTitle(request.title());
-        complaint.setTrackingToken(UUID.randomUUID().toString());
+        complaint.setTrackingToken(generateTrackingToken());
         complaint.setDescription(request.description());
         complaint.setLatitude(request.latitude());
         complaint.setLongitude(request.longitude());
@@ -146,5 +146,15 @@ public class ComplaintServiceImpl implements ComplaintService {
                 .stream()
                 .map(MyCityExtensions::complaintToResponse)
                 .toList();
+    }
+
+    private String generateTrackingToken() {
+        String token;
+
+        do {
+            token = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        } while (complaintRepository.existsByTrackingToken(token));
+
+        return token;
     }
 }

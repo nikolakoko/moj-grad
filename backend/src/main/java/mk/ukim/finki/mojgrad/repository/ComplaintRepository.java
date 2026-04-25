@@ -8,5 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
+    
     Optional<Complaint> findByTrackingToken(String trackingToken);
+
+    Boolean existsByTrackingToken(String trackingToken);
 }

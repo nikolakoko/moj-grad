@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Loader2 } from "lucide-react";
 
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 <Label>Email</Label>
                 <Input
                   type="email"
-                  placeholder="vase@email.com"
+                  placeholder="example@email.com"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 <Label>Лозинка</Label>
                 <Input
                   type="password"
-                  placeholder="••••••••"
+                  placeholder=""
                   value={formData.password}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -122,17 +122,18 @@ export default function LoginPage() {
 
               {/* BUTTON */}
               <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
+                  type="submit"
+                  className="w-full flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                  aria-busy={isLoading}
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Се најавува...
-                  </>
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Се најавува...
+                    </>
                 ) : (
-                  "Најави се"
+                    "Најави се"
                 )}
               </Button>
             </form>
@@ -142,8 +143,8 @@ export default function LoginPage() {
         {/* BACK */}
         <div className="mt-6 text-center">
           <a
-            href="/"
-            className="text-sm text-blue-600 hover:text-blue-800"
+              href="/"
+              className="inline-block text-sm text-blue-600 hover:text-blue-800 hover:scale-110"
           >
             ← Назад
           </a>

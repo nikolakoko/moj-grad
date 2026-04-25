@@ -10,10 +10,9 @@ import { User } from "@/types";
 import type { UserRole } from "@/types";
 
 interface JwtPayload {
+  sub: string;
   id: string;
-  email: string;
   role: string;
-  name: string;
   exp: number;
 }
 
@@ -27,11 +26,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Backend prakja "ROLE_ADMIN" ili "ROLE_ADMINISTRATION_WORKER"
+// Frontend ocekuva "ADMIN" ili "ADMINISTRATION_WORKER"
+function stripRolePrefix(role: string): UserRole {
+  return role.replace("ROLE_", "") as UserRole;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  //  LOAD TOKEN ON START
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -39,16 +43,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const decoded = jwtDecode<JwtPayload>(token);
 
-        // optional: check expiry
         if (decoded.exp * 1000 < Date.now()) {
           localStorage.removeItem("token");
           setUser(null);
         } else {
           setUser({
-            id: decoded.id,
-            email: decoded.email,
-            role: decoded.role as any,
-            name: decoded.name,
+            id: String(decoded.id),
+            email: decoded.sub,
+            role: stripRolePrefix(decoded.role),
+            name: decoded.sub,
             enabled: true,
           });
         }
@@ -61,39 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  
-   //DEMO
-  /*const login = async (email: string, password: string) => {
-  let fakeUser;
-
-  if (email === "admin@test.com") {
-    fakeUser = {
-      id: "1",
-      name: "Admin Demo",
-      email,
-      role: "ADMIN" as UserRole,
-      enabled: true,
-    };
-  } else {
-    fakeUser = {
-      id: "2",
-      name: "Worker Demo",
-      email,
-      role: "ADMINISTRATION_WORKER" as UserRole,
-      enabled: true,
-    };
-  }
-
-  localStorage.setItem("token", "demo-token");
-  localStorage.setItem("user", JSON.stringify(fakeUser));
-
-  setUser(fakeUser);
-  return true;
-};
-*/
-
-  //  LOGIN
-    const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -115,10 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const decoded = jwtDecode<JwtPayload>(token);
 
       setUser({
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role as any,
-        name: decoded.name,
+        id: String(decoded.id),
+        email: decoded.sub,
+        role: stripRolePrefix(decoded.role),
+        name: decoded.sub,
         enabled: true,
       });
 
@@ -129,12 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  //  LOGOUT
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    
   };
 
   return (
