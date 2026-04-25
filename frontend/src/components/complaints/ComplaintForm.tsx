@@ -275,11 +275,11 @@ export function ComplaintForm({ onSubmitted, onReset: onResetCallback }: { onSub
               onChange={e => setDescription(e.target.value)}
               placeholder="Детален опис на проблемот"
               rows={4}
-              maxLength={200}
+              maxLength={400}
               required
               className="bg-gray-100 border-0 rounded-xl focus-visible:ring-1 resize-none"
             />
-            <p className="text-xs text-gray-400 text-right">{description.length}/200</p>
+            <p className="text-xs text-gray-400 text-right">{description.length}/400</p>
           </div>
  
           {/* Map */}

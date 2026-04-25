@@ -8,7 +8,7 @@ public record ComplaintRequest(
         String title,
 
         @NotBlank(message = "Description is required")
-        @Size(max = 200, message = "Description must be at most 200 characters")
+        @Size(max = 400, message = "Description must be at most 200 characters")
         String description,
 
         @NotNull(message = "Latitude is required")
