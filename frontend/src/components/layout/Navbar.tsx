@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Building2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import logo from '../../assets/mojgradLogo.png'
  
 function smoothScrollTo(id: string) {
   const el = document.getElementById(id);
@@ -18,9 +19,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
+              <img src={logo} alt="МојГрад" className="w-14 h-14 object-contain" />
+            
             <span className="text-xl font-semibold text-gray-900">МојГрад</span>
           </Link>
 

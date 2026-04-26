@@ -4,6 +4,7 @@ import { ComplaintForm } from '@/components/complaints/ComplaintForm';
 import { TokenSearchModal } from '@/components/complaints/TokenSearchModal';
 import { HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import logo from '../assets/mojgradLogo.png';
 
 export default function HomePage() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
@@ -33,11 +34,12 @@ export default function HomePage() {
               </div>
             </div>
             <div className="hidden lg:block">
-              <img
-                src="https://images.unsplash.com/photo-1760451265816-126b8338c18d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjaXR5JTIwaW5mcmFzdHJ1Y3R1cmV8ZW58MXx8fHwxNzc0NjkzMDMzfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Modern City"
-                className="rounded-2xl shadow-2xl"
-              />
+              {/* LOGO */}
+              <div className="flex items-center">
+               <div className="w-[1000px]">
+                <img src={logo} alt="МојГрад" className="w-full h-auto object-contain" />
+               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center items-center gap-2 mb-4">
-              <div className="bg-blue-600 p-2 rounded-lg"><MapPin className="w-6 h-6" /></div>
+              <img src={logo} alt="МојГрад" className="w-14 h-14 object-contain" />
               <span className="text-xl font-semibold">МојГрад</span>
             </div>
             <p className="text-gray-400">© 2026 МојГрад. Сите права задржани.</p>

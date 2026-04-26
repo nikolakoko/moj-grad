@@ -15,6 +15,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import logo from '../assets/mojgradLogo.png';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -64,11 +65,9 @@ export default function LoginPage() {
 
         {/* LOGO */}
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-3 rounded-xl">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="МојГрад" className="w-16 h-16 object-contain" />
+            <span className="text-3xl font-bold text-gray-900 leading-none">
               МојГрад
             </span>
           </div>
