@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
 import mk.ukim.finki.mojgrad.domain.entities.Department;
+import mk.ukim.finki.mojgrad.domain.entities.User;
 import mk.ukim.finki.mojgrad.domain.enums.ComplaintStatus;
 import mk.ukim.finki.mojgrad.domain.enums.Priority;
 import mk.ukim.finki.mojgrad.dto.ClassificationResultDTO;
+import mk.ukim.finki.mojgrad.dto.request.complaint.ComplaintFilterRequest;
 import mk.ukim.finki.mojgrad.dto.request.complaint.ComplaintRequest;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
@@ -15,9 +17,13 @@ import mk.ukim.finki.mojgrad.mapper.MyCityExtensions;
 import mk.ukim.finki.mojgrad.repository.ComplaintRepository;
 import mk.ukim.finki.mojgrad.repository.DepartmentRepository;
 import mk.ukim.finki.mojgrad.service.intf.ComplaintService;
+import mk.ukim.finki.mojgrad.service.specifications.ComplaintSpecification;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -156,5 +162,13 @@ public class ComplaintServiceImpl implements ComplaintService {
         } while (complaintRepository.existsByTrackingToken(token));
 
         return token;
+    }
+
+    @Override
+    public Page<ComplaintResponse> findAllByDepartment(ComplaintFilterRequest filter, Pageable pageable, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Department department = user.getDepartment();
+        return complaintRepository.findAll(ComplaintSpecification.filter(filter, department), pageable)
+                .map(MyCityExtensions::complaintToResponse);
     }
 }
