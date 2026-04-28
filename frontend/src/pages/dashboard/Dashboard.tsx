@@ -36,8 +36,10 @@ export default function WorkerDashboard() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [showMyDepartment, setShowMyDepartment] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [selectedComplaint, setSelectedComplaint] = useState<string | null>(null);
   const [openRow, setOpenRow] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
+  const itemsPerPage = 10;
 
   // ---------------- LABELS ----------------
   const statusLabels: any = {
@@ -112,6 +114,14 @@ export default function WorkerDashboard() {
 
     return matchesSearch && matchesStatus && matchesPriority && matchesDepartment;
   });
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
+  const paginatedComplaints = filteredComplaints.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+  const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
 
   const countByStatus = (status: string) =>
     complaints.filter(
@@ -276,6 +286,53 @@ export default function WorkerDashboard() {
                 </thead>
 
                  <tbody>
+                  {selectedComplaint && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div className="bg-white w-[520px] rounded-xl p-6 shadow-lg">
+
+      <h2 className="text-xl font-bold mb-4">
+        Детали за жалба
+      </h2>
+
+      {/* IMAGE */}
+      {selectedComplaint.image && (
+        <img
+          src={selectedComplaint.image}
+          className="w-full h-48 object-cover rounded-lg mb-4"
+        />
+      )}
+
+      <div className="space-y-2 text-sm">
+
+        <p><b>Наслов:</b> {selectedComplaint.title}</p>
+        <p><b>Опис:</b> {selectedComplaint.description}</p>
+        <p><b>Слика:</b></p>
+        <img src={selectedComplaint.image} alt="complaint" className="w-full h-48 object-cover rounded mt-2"/>
+        <p><b>Статус:</b>{" "}
+          {typeof selectedComplaint.status === "object"
+          ? selectedComplaint.status?.name || selectedComplaint.status?.value
+          : selectedComplaint.status}</p>
+        <p><b>Приоритет:</b> {selectedComplaint.priority}</p>
+        <p><b>Оддел:</b> {selectedComplaint.department}</p>
+        <p>
+          <b>Локација:</b> {selectedComplaint.latitude}, {selectedComplaint.longitude}
+        </p>
+
+      </div>
+      
+
+      <button
+        className="mt-5 px-4 py-2 bg-red-500 text-white rounded"
+        onClick={() => setSelectedComplaint(null)}
+      >
+        Затвори
+      </button>
+
+    </div>
+
+  </div>
+)}
   {filteredComplaints.map((c, index) => {
     const statusKey = normalizeEnum(c.status, "PENDING");
     const priorityKey = normalizeEnum(c.priority, "LOW");
@@ -339,32 +396,14 @@ export default function WorkerDashboard() {
 
           {/* ACTIONS */}
           <td className="px-4 py-4">
-            <button className="text-blue-600 hover:underline text-sm">
-              Детали
+            <button onClick={() => setSelectedComplaint(c)}>
+             Детали
             </button>
           </td>
 
         </tr>
 
-        {/* EXPAND ROW */}
-        {isOpen && (
-          <tr>
-            <td colSpan={7} className="bg-gray-50 px-6 py-5">
-
-              <div className="bg-white p-4 rounded-xl border space-y-2">
-
-                <p><b>ID:</b> {c.id}</p>
-                <p><b>Опис:</b> {c.description || "Нема опис"}</p>
-                <p><b>Локација:</b> {c.latitude}, {c.longitude}</p>
-                <p><b>Оддел:</b> {departmentLabels[departmentKey]}</p>
-                <p><b>Статус:</b> {statusLabels[statusKey]}</p>
-                <p><b>Приоритет:</b> {priorityLabels[priorityKey]}</p>
-
-              </div>
-
-            </td>
-          </tr>
-        )}
+        
 
       </React.Fragment>
     );
@@ -375,8 +414,32 @@ export default function WorkerDashboard() {
 
           </CardContent>
         </Card>
+      <div className="flex justify-center items-center gap-3 mt-6">
+
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+
+          <span className="text-sm">
+            Page {currentPage} / {totalPages || 1}
+          </span>
+
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+
+        </div>
 
       </div>
     </div>
   );
+      
 }
