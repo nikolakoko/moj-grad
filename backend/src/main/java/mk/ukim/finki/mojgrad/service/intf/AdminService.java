@@ -1,5 +1,7 @@
 package mk.ukim.finki.mojgrad.service.intf;
 
+import mk.ukim.finki.mojgrad.dto.request.user.UserEmailRequest;
+
 public interface AdminService {
-    // TODO: define methods
+    void inviteWorker(UserEmailRequest userEmailRequest);
 }
