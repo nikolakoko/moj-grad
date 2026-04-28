@@ -20,9 +20,15 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    @PostMapping("/invite-worker")
-    public ResponseEntity<Void> inviteManager(@RequestBody @Valid UserEmailRequest userEmailRequest) {
+    @PostMapping("/workers/invite")
+    public ResponseEntity<Void> inviteWorker(@RequestBody @Valid UserEmailRequest userEmailRequest) {
         adminService.inviteWorker(userEmailRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/workers/edit")
+    public ResponseEntity<Void> editWorker(@RequestBody @Valid UserEmailRequest userEmailRequest) {
+
         return ResponseEntity.ok().build();
     }
 }

@@ -7,13 +7,13 @@
     <style>
         .verification-code {
             display: inline-block;
-            padding: 16px 28px;
+            padding: 14px 20px;
             border-radius: 10px;
             background: rgba(37, 99, 235, 0.08);
             border: 2px solid #2563eb;
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: 6px;
+            letter-spacing: 2px;
             color: #2563eb;
             text-align: center;
             margin-bottom: 28px;
@@ -42,27 +42,28 @@
                         <p style="margin:0 0 20px 0;font-size:14px;color:#555;line-height:1.6;">
                             Почитуван/а,
                             <br>
-                            Оваа е-пошта Ви е испратен со цел на креирање на корисничка сметка за Административен работник на системот
-                            <strong style="color: #2563eb">МојГрад</strong>.
+                            Оваа е-пошта Ви е испратен со цел на креирање на корисничка сметка за Административен
+                            работник на системот <strong style="color: #2563eb">МојГрад</strong>.
                         </p>
 
                         <p style="margin:0 0 28px 0;font-size:14px;color:#555;">
-                            Кликнете на линкот подоле, за да ве испрати кон страната за креирање на вашата сметка:
+                            Кликнете на копчето подоле, за да ве испрати кон страната за креирање на вашата сметка:
                         </p>
 
-                        <div class="verification-code">
-                            <!--/*@thymesVar id="inviteToken" type="java.lang.String"*/-->
-                            <span th:text="${inviteToken}">XXXXXX</span>
-                        </div>
+                        <!--/*@thymesVar id="invitationUrl" type="java.lang.String"*/-->
+                        <a th:href="${invitationUrl}" class="verification-code">
+                            Регистрирај се
+                        </a>
 
                         <p style="margin:0 0 16px 0;font-size:13px;color:#777;line-height:1.6;">
-                            Овој линк е валиден само одредено време.
+                            Овој линк е валиден само 24 часа.
                         </p>
 
                         <hr style="border:none;border-top:1px solid #eef1f4;margin:24px 0;">
 
                         <p style="margin:0;font-size:12px;color:#999;">
-                            Доколку немате никаков договор со надлежен за да ја добиете оваа покана, можете безбедно да ја игнорирате оваа е-пошта.                        </p>
+                            Доколку немате никаков договор со надлежен за да ја добиете оваа покана, можете безбедно да
+                            ја игнорирате оваа е-пошта. </p>
                     </td>
                 </tr>
 
