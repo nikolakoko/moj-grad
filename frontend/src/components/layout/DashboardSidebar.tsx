@@ -11,6 +11,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/mojgradLogo.png";
 
 export function DashboardSidebar() {
   const { user, logout } = useAuth();
@@ -34,14 +35,15 @@ export function DashboardSidebar() {
   return (
     <div className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
 
+
       {/* LOGO */}
       <div className="p-6 border-b">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xl font-semibold">МојГрад</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <img
+           src={logo} alt="МојГрад" className="w-16 h-16 object-contain"/>
+        
+      <span className="text-xl font-semibold">МојГрад</span>
+       </div>
       </div>
 
       {/* USER INFO */}
