@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Административен работник покана</title>
+    <title>Ажурирање на корисничка сметка</title>
     <style>
         .verification-code {
             display: inline-block;
@@ -36,22 +36,22 @@
                             МојГрад
                         </h1>
                         <h2 style="margin:0 0 12px 0;font-size:20px;color:#222;">
-                            Покана за административен работник
+                            Ажурирање на корисничка сметка
                         </h2>
 
                         <p style="margin:0 0 20px 0;font-size:14px;color:#555;line-height:1.6;">
                             Почитуван/а,
                             <br>
-                            Оваа е-пошта Ви е испратена со цел на креирање на корисничка сметка за Административен
-                            работник на системот <strong style="color: #2563eb">МојГрад</strong>.
+                            Оваа е-пошта Ви е испратен по ваше барање, за можност, за ажурирање на вашата корисничка сметка
+                            на системот <strong style="color: #2563eb">МојГрад</strong>.
                         </p>
 
                         <p style="margin:0 0 28px 0;font-size:14px;color:#555;">
-                            Кликнете на копчето подоле, за да ве испрати кон страната за креирање на вашата сметка:
+                            Кликнете на копчето подоле, за да ве испрати кон страната за ажурирање на вашата сметка:
                         </p>
 
-                        <!--/*@thymesVar id="invitationUrl" type="java.lang.String"*/-->
-                        <a th:href="${invitationUrl}" class="verification-code">
+                        <!--/*@thymesVar id="editUrl" type="java.lang.String"*/-->
+                        <a th:href="${editUrl}" class="verification-code">
                             Регистрирај се
                         </a>
 
@@ -62,7 +62,7 @@
                         <hr style="border:none;border-top:1px solid #eef1f4;margin:24px 0;">
 
                         <p style="margin:0;font-size:12px;color:#999;">
-                            Доколку немате никаков договор со надлежен за да ја добиете оваа покана, можете безбедно да
+                            Доколку немате никаков договор со надлежен за ажурирање на вашата корисничка сметка, можете безбедно да
                             ја игнорирате оваа е-пошта.
                         </p>
                     </td>

@@ -1,6 +1,7 @@
 package mk.ukim.finki.mojgrad.listener;
 
 import lombok.RequiredArgsConstructor;
+import mk.ukim.finki.mojgrad.events.EditUserEvent;
 import mk.ukim.finki.mojgrad.events.InviteUserEvent;
 import mk.ukim.finki.mojgrad.service.TemplateFactory;
 import mk.ukim.finki.mojgrad.service.intf.MailService;
@@ -23,7 +24,8 @@ public class MailEventListener {
     @Async
     @EventListener
     public void onInviteUser(InviteUserEvent event) {
-        String invitationUrl = frontEndBaseUrl + "/register/worker?token=" + event.token();
+        String invitationUrl = frontEndBaseUrl + "/worker/register?token=" + event.token();
+
         Map<String, Object> templateModel = Map.of(
                 "invitationUrl", invitationUrl
         );
@@ -32,7 +34,25 @@ public class MailEventListener {
 
         mailService.sendEmail(
                 event.email(),
-                "МојГрад - Административен работник покана",
+                "МојГрад - покана за Административен работник",
+                html
+        );
+    }
+
+    @Async
+    @EventListener
+    public void onEditUser(EditUserEvent event) {
+        String editUrl = frontEndBaseUrl + "/worker/edit?token=" + event.token();
+
+        Map<String, Object> templateModel = Map.of(
+                "editUrl", editUrl
+        );
+
+        String html = templateFactory.render("edit-user-email", templateModel);
+
+        mailService.sendEmail(
+                event.email(),
+                "МојГрад - ажурирање на корисничка сметка",
                 html
         );
     }

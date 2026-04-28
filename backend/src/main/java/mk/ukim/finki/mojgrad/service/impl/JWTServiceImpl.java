@@ -80,7 +80,7 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
-    public String generateInviteToken(String email, Role role) {
+    public String generateMailToken(String email, Role role) {
         return Jwts.builder()
                 .claim("email", email)
                 .claim("role", role.getAuthority())

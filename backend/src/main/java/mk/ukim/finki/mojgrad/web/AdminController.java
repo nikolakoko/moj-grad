@@ -28,7 +28,7 @@ public class AdminController {
 
     @PostMapping("/workers/edit")
     public ResponseEntity<Void> editWorker(@RequestBody @Valid UserEmailRequest userEmailRequest) {
-
+        adminService.editWorker(userEmailRequest);
         return ResponseEntity.ok().build();
     }
 }

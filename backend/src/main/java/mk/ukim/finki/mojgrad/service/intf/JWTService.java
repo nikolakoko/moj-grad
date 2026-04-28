@@ -27,5 +27,5 @@ public interface JWTService {
 
     Date extractExpiration(String token);
 
-    String generateInviteToken(String email, Role role);
+    String generateMailToken(String email, Role role);
 }

@@ -5,6 +5,7 @@ import mk.ukim.finki.mojgrad.domain.entities.User;
 import mk.ukim.finki.mojgrad.domain.enums.Role;
 import mk.ukim.finki.mojgrad.domain.enums.UserStatus;
 import mk.ukim.finki.mojgrad.dto.request.user.UserEmailRequest;
+import mk.ukim.finki.mojgrad.events.EditUserEvent;
 import mk.ukim.finki.mojgrad.events.InviteUserEvent;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ConflictException;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
@@ -41,9 +42,22 @@ public class AdminServiceImpl implements AdminService {
 
         userRepository.save(invitedUser);
 
-        String token = jwtService.generateInviteToken(userEmailRequest.email(), Role.ADMINISTRATION_WORKER);
+        String token = jwtService.generateMailToken(userEmailRequest.email(), Role.ADMINISTRATION_WORKER);
 
         InviteUserEvent event = new InviteUserEvent(userEmailRequest.email(), token);
+        eventPublisher.publishEvent(event);
+    }
+
+    @Override
+    public void editWorker(UserEmailRequest userEmailRequest) {
+
+        if (userRepository.existsByEmail(userEmailRequest.email())) {
+            throw new ConflictException(AuthExceptionMessages.EMAIL_TAKEN);
+        }
+
+        String token = jwtService.generateMailToken(userEmailRequest.email(), Role.ADMINISTRATION_WORKER);
+
+        EditUserEvent event = new EditUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);
     }
 }
