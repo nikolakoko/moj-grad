@@ -11,9 +11,10 @@ import { useAuth } from "./AuthContext";
 
 interface ComplaintContextType {
   complaints: Complaint[];
+  updateComplaint: (id: string, data: Partial<Complaint>) => Promise<void>;
 
   fetchComplaints: () => Promise<void>;
-
+  
   submitComplaint: (data: {
     title: string;
     description: string;
@@ -26,7 +27,7 @@ interface ComplaintContextType {
   getComplaintByToken: (token: string) => Promise<Complaint>;
 }
 
-const ComplaintContext = createContext<ComplaintContextType | undefined>(
+export const ComplaintContext = createContext<ComplaintContextType | undefined>(
   undefined
 );
 
@@ -53,8 +54,8 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   useEffect(() => {
-  fetchComplaints();
-   }, [user]);
+    fetchComplaints();
+  }, [user]);
   // ================= CREATE =================
   const submitComplaint = async (data: {
     title: string;
@@ -74,7 +75,8 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
   };
 
   // ================= UPDATE =================
-  /*const updateComplaint = async (
+
+  const updateComplaint = async (
     id: string,
     data: Partial<Complaint>
   ): Promise<void> => {
@@ -87,7 +89,6 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data),
       });
 
-      
       setComplaints((prev) =>
         prev.map((c) =>
           c.id === id ? { ...c, ...res } : c
@@ -97,7 +98,7 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
       console.error("Update complaint error:", error);
     }
   };
-  */
+
   // ================= GET BY TOKEN =================
   const getComplaintByToken = async (token: string) => {
     return await apiClient(
@@ -112,6 +113,7 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
         fetchComplaints,
         submitComplaint,
         getComplaintByToken,
+         updateComplaint,
       }}
     >
       {children}
