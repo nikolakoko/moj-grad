@@ -75,7 +75,7 @@ export default function DocumentGeneratePage() {
       <DashboardSidebar />
 
       <div className="flex-1 overflow-auto">
-        <div className="p-8 max-w-3xl space-y-6">
+        <div className="p-8 max-w-5xl mx-auto space-y-6">
 
           {/* Header */}
           <div className="mb-2">
