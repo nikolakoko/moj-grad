@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.JWTConstants;
 import mk.ukim.finki.mojgrad.domain.entities.User;
-import mk.ukim.finki.mojgrad.domain.enums.Role;
 import mk.ukim.finki.mojgrad.service.intf.JWTService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -80,10 +79,9 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
-    public String generateMailToken(String email, Role role) {
+    public String generateMailToken(String email) {
         return Jwts.builder()
                 .claim("email", email)
-                .claim("role", role.getAuthority())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + JWTConstants.EXPIRATION_TIME))
                 .signWith(getSignInKey())

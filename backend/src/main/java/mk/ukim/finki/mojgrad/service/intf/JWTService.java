@@ -2,7 +2,6 @@ package mk.ukim.finki.mojgrad.service.intf;
 
 import io.jsonwebtoken.Claims;
 import mk.ukim.finki.mojgrad.domain.entities.User;
-import mk.ukim.finki.mojgrad.domain.enums.Role;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Key;
@@ -27,5 +26,5 @@ public interface JWTService {
 
     Date extractExpiration(String token);
 
-    String generateMailToken(String email, Role role);
+    String generateMailToken(String email);
 }

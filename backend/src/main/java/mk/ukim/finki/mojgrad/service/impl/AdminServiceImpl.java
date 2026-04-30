@@ -42,7 +42,7 @@ public class AdminServiceImpl implements AdminService {
 
         userRepository.save(invitedUser);
 
-        String token = jwtService.generateMailToken(userEmailRequest.email(), Role.ADMINISTRATION_WORKER);
+        String token = jwtService.generateMailToken(userEmailRequest.email());
 
         InviteUserEvent event = new InviteUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);
@@ -55,7 +55,7 @@ public class AdminServiceImpl implements AdminService {
             throw new ConflictException(AuthExceptionMessages.EMAIL_TAKEN);
         }
 
-        String token = jwtService.generateMailToken(userEmailRequest.email(), Role.ADMINISTRATION_WORKER);
+        String token = jwtService.generateMailToken(userEmailRequest.email());
 
         EditUserEvent event = new EditUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);
