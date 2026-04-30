@@ -65,19 +65,7 @@ const priorityColors: Record<string, string> = {
   HIGH: 'bg-red-100 text-red-700 border-red-200',
 };
 
-// ── Бои (modal chips) ─────────────────────────────────────────────────────────
-const statusChipColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800 border-blue-200',
-  RESOLVED: 'bg-green-100 text-green-800 border-green-200',
-  REJECTED: 'bg-red-100 text-red-800 border-red-200',
-};
 
-const priorityChipColors: Record<string, string> = {
-  LOW: 'bg-green-100 text-green-700 border-green-200',
-  MEDIUM: 'bg-orange-100 text-orange-700 border-orange-200',
-  HIGH: 'bg-red-100 text-red-700 border-red-200',
-};
 
 // ── Normalize ─────────────────────────────────────────────────────────────────
 const normalizeEnum = (value: any, fallback: string): string => {
@@ -108,7 +96,7 @@ export default function WorkerDashboard() {
   const [addresses, setAddresses] = useState<Record<number, string>>({});
   const [editComplaint, setEditComplaint] = useState<any | null>(null);
   const { updateComplaint } = useContext(ComplaintContext);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+
 
   useEffect(() => {
     (complaints as any[]).forEach((c) => {
@@ -141,27 +129,7 @@ export default function WorkerDashboard() {
   const countByStatus = (status: string) =>
     (complaints as any[]).filter((c) => normalizeEnum(c.complaintStatus, 'PENDING') === status).length;
 
-  const sc = selectedComplaint;
-  const scStatusKey = sc ? normalizeEnum(sc.complaintStatus, 'PENDING') : '';
-  const scPriorityKey = sc ? normalizeEnum(sc.priority, 'LOW') : '';
 
-  const handleSave = async () => {
-    if (!editComplaint?.id) return;
-
-    const { id, ...data } = editComplaint;
-
-    try {
-      await updateComplaint(id, data);
-
-      setSelectedComplaint(null);
-      setEditComplaint(null);
-
-      alert("Успешно зачувано!");
-    } catch (error) {
-      console.error(error);
-      alert("Грешка при зачувување");
-    }
-  };
 
   return (
     <>
@@ -325,9 +293,7 @@ export default function WorkerDashboard() {
 
         </div>
 
-        
-        {/* ── DETAIL + EDIT  ── */}
-
+        {/* ── DETAIL MODAL ── */}
         <Dialog
           open={!!selectedComplaint}
           onOpenChange={(open) => {
@@ -390,78 +356,39 @@ export default function WorkerDashboard() {
                   </div>
                 </div>
 
-                {/* ── EDIT GRID ── */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* ── 3 КОПЧИЊА ── */}
+                <div className="flex gap-3 flex-wrap">
 
-                  {/* STATUS */}
-                  <div>
-                    <Label>Статус</Label>
-                    <select
-                      value={editComplaint?.status || ""}
-                      onChange={(e) =>
-                        setEditComplaint((prev: any) => ({
-                          ...prev,
-                          status: e.target.value,
-                        }))
-                      }
-                      className="mt-2 w-full border rounded-lg p-2"
-                    >
-                      <option value="PENDING">На чекање</option>
-                      <option value="IN_PROGRESS">Во тек</option>
-                      <option value="RESOLVED">Решена</option>
-                      <option value="REJECTED">Одбиена</option>
-                    </select>
+                  {/* СТАТУС */}
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Статус</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                      statusColors[normalizeEnum(selectedComplaint?.complaintStatus, 'PENDING')] ?? ''
+                    }`}>
+                      {statusLabels[normalizeEnum(selectedComplaint?.complaintStatus, 'PENDING')] ?? '-'}
+                    </span>
                   </div>
 
-                  {/* PRIORITY */}
-                  <div>
-                    <Label>Приоритет</Label>
-                    <select
-                      value={editComplaint?.priority || ""}
-                      onChange={(e) =>
-                        setEditComplaint((prev: any) => ({
-                          ...prev,
-                          priority: e.target.value,
-                        }))
-                      }
-                      className="mt-2 w-full border rounded-lg p-2"
-                    >
-                      <option value="LOW">Низок</option>
-                      <option value="MEDIUM">Среден</option>
-                      <option value="HIGH">Висок</option>
-                    </select>
+                  {/* ПРИОРИТЕТ */}
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Приоритет</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                      priorityColors[normalizeEnum(selectedComplaint?.priority, 'LOW')] ?? ''
+                    }`}>
+                      {priorityLabels[normalizeEnum(selectedComplaint?.priority, 'LOW')] ?? '-'}
+                    </span>
                   </div>
 
-                  {/* DEPARTMENT */}
-                  <div>
-                    <Label>Оддел</Label>
-                    <select
-                      value={editComplaint?.department || ""}
-                      onChange={(e) =>
-                        setEditComplaint((prev: any) => ({
-                          ...prev,
-                          department: e.target.value,
-                        }))
-                      }
-                      className="mt-2 w-full border rounded-lg p-2"
-                    >
-                      <option value="INFRASTRUCTURE">Инфраструктура</option>
-                      <option value="ENVIRONMENT">Комунални услуги</option>
-                      <option value="PUBLIC_SAFETY">Хигиена</option>
-                    </select>
+                  {/* ОДДЕЛ */}
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Оддел</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium border bg-indigo-50 text-indigo-700 border-indigo-200">
+                      {selectedComplaint?.departmentName ?? '-'}
+                    </span>
                   </div>
 
                 </div>
 
-                {/* SAVE BUTTON */}
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={handleSave}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Зачувај промени
-                  </button>
-                </div>
 
                 {/* ДАТУМ */}
                 <div className="pt-2 border-t border-gray-100">
