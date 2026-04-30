@@ -77,4 +77,14 @@ public class JWTServiceImpl implements JWTService {
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+
+    @Override
+    public String generateMailToken(String email) {
+        return Jwts.builder()
+                .claim("email", email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + JWTConstants.EXPIRATION_TIME))
+                .signWith(getSignInKey())
+                .compact();
+    }
 }
