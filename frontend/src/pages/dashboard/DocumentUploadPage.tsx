@@ -3,37 +3,82 @@ import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, CheckCircle, AlertCircle, Loader2, FileSpreadsheet } from 'lucide-react';
+import { useComplaints } from '@/context/ComplaintContext';
 import { toast } from 'sonner';
 
 export default function DocumentUploadPage() {
+  const { fetchComplaints } = useComplaints();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.size > 10 * 1024 * 1024) { toast.error('Фајлот е преголем. Максимална големина: 10MB'); return; }
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        toast.error('Фајлот е преголем. Максимална големина: 10MB');
+        return;
+      }
       setFile(selectedFile);
       setUploadStatus('idle');
+      setErrorMessage('');
     }
   };
 
   const handleUpload = async () => {
     if (!file) return;
+
     setIsUploading(true);
     setUploadStatus('idle');
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    const isValid = Math.random() > 0.2;
-    if (isValid) {
+    setErrorMessage('');
+
+    try {
+      const token = localStorage.getItem('token');
+
+      // POST /api/complaints/import — multipart/form-data со "file" part
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/complaints/import', {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          // НЕ поставувај Content-Type — браузерот сам го поставува со boundary за multipart
+        },
+        body: formData,
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Грешка при увоз на жалбите');
+      }
+
+      // Refresh complaints во контекстот по успешен import
+      await fetchComplaints();
+
       setUploadStatus('success');
       toast.success('Жалбите се успешно внесени!');
-      setTimeout(() => { setFile(null); setUploadStatus('idle'); }, 3000);
-    } else {
+      setTimeout(() => {
+        setFile(null);
+        setUploadStatus('idle');
+      }, 3000);
+    } catch (error) {
+      console.error('Import error:', error);
+      const msg = error instanceof Error ? error.message : 'Невалидна структура на фајлот.';
+      setErrorMessage(msg);
       setUploadStatus('error');
-      toast.error('Грешка: Невалидна структура на документот');
+      toast.error('Грешка при обработка на документот');
+    } finally {
+      setIsUploading(false);
     }
-    setIsUploading(false);
   };
 
   const columns = [
@@ -53,7 +98,7 @@ export default function DocumentUploadPage() {
           {/* Header */}
           <div className="mb-2">
             <h1 className="text-3xl font-bold text-gray-900">Прикачување жалби</h1>
-            <p className="text-gray-500 mt-1">Импортирајте жалби од CSV или Excel документи</p>
+            <p className="text-gray-500 mt-1">Импортирајте жалби од CSV документи</p>
           </div>
 
           {/* Stats banner */}
@@ -63,7 +108,7 @@ export default function DocumentUploadPage() {
             </div>
             <div>
               <p className="text-blue-100 text-sm font-medium">Поддржани формати</p>
-              <p className="text-2xl font-bold">.csv &nbsp;·&nbsp; .xlsx &nbsp;·&nbsp; .xls</p>
+              <p className="text-2xl font-bold">.csv</p>
             </div>
           </div>
 
@@ -71,7 +116,7 @@ export default function DocumentUploadPage() {
           <Card className="shadow-sm border-gray-200">
             <CardHeader>
               <CardTitle className="text-lg">Прикачи документ</CardTitle>
-              <CardDescription>Изберете CSV или Excel фајл кој содржи жалби</CardDescription>
+              <CardDescription>Изберете CSV фајл кој содржи жалби</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
 
@@ -79,7 +124,14 @@ export default function DocumentUploadPage() {
               <div className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
                 file ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
               }`}>
-                <input type="file" id="file-upload" className="hidden" accept=".csv,.xlsx,.xls" onChange={handleFileChange} disabled={isUploading} />
+                <input
+                  type="file"
+                  id="file-upload"
+                  className="hidden"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                />
                 <label htmlFor="file-upload" className="cursor-pointer">
                   <div className="flex flex-col items-center gap-4">
                     {file ? (
@@ -100,7 +152,7 @@ export default function DocumentUploadPage() {
                         </div>
                         <div>
                           <p className="text-base font-semibold text-gray-900">Кликнете за да изберете фајл</p>
-                          <p className="text-sm text-gray-500 mt-1">Или повлечете фајл овде</p>
+                          <p className="text-sm text-gray-500 mt-1">Само .csv фајлови, максимум 10MB</p>
                         </div>
                       </>
                     )}
@@ -120,7 +172,7 @@ export default function DocumentUploadPage() {
                   <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-red-800 text-sm font-semibold">Грешка при обработка на документот</p>
-                    <p className="text-red-700 text-xs mt-1">Невалидна структура на фајлот.</p>
+                    <p className="text-red-700 text-xs mt-1">{errorMessage || 'Невалидна структура на фајлот.'}</p>
                   </div>
                 </div>
               )}

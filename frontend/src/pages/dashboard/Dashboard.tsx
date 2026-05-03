@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import React from "react";
 import { useContext } from "react";
 import { ComplaintContext } from "../../context/ComplaintContext";
@@ -65,7 +65,19 @@ const priorityColors: Record<string, string> = {
   HIGH: 'bg-red-100 text-red-700 border-red-200',
 };
 
+// ── Sort orders ───────────────────────────────────────────────────────────────
+const statusOrder: Record<string, number> = {
+  PENDING: 0,
+  IN_PROGRESS: 1,
+  RESOLVED: 2,
+  REJECTED: 3,
+};
 
+const priorityOrder: Record<string, number> = {
+  LOW: 0,
+  MEDIUM: 1,
+  HIGH: 2,
+};
 
 // ── Normalize ─────────────────────────────────────────────────────────────────
 const normalizeEnum = (value: any, fallback: string): string => {
@@ -95,15 +107,38 @@ export default function WorkerDashboard() {
   const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
   const [addresses, setAddresses] = useState<Record<number, string>>({});
   const [editComplaint, setEditComplaint] = useState<any | null>(null);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { updateComplaint } = useContext(ComplaintContext);
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(column);
+      setSortDir('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortBy !== column) return <ChevronsUpDown className="inline w-3.5 h-3.5 ml-1 text-gray-300" />;
+    return sortDir === 'asc'
+      ? <ChevronUp className="inline w-3.5 h-3.5 ml-1 text-blue-500" />
+      : <ChevronDown className="inline w-3.5 h-3.5 ml-1 text-blue-500" />;
+  };
 
 
   useEffect(() => {
     (complaints as any[]).forEach((c) => {
-      if (c.id !== undefined && !addresses[c.id] && c.latitude && c.longitude) {
+      if (c.id === undefined || addresses[c.id]) return;
+
+      if (c.latitude && c.longitude) {
         reverseGeocode(c.latitude, c.longitude).then((addr) =>
           setAddresses((prev) => ({ ...prev, [c.id]: addr }))
         );
+      } else {
+        setAddresses((prev) => ({ ...prev, [c.id]: 'Непозната локација' }));
       }
     });
   }, [complaints]);
@@ -114,13 +149,60 @@ export default function WorkerDashboard() {
     new Set((complaints as any[]).map((c) => c.departmentName).filter(Boolean))
   ) as string[];
 
-  const filteredComplaints = (complaints as any[]).filter((c) => {
-    const matchesSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || normalizeEnum(c.complaintStatus, 'PENDING') === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || normalizeEnum(c.priority, 'LOW') === priorityFilter;
-    const matchesDepartment = departmentFilter === 'all' || c.departmentName === departmentFilter;
-    return matchesSearch && matchesStatus && matchesPriority && matchesDepartment;
-  });
+  const filteredComplaints = (complaints as any[])
+    .filter((c) => {
+      const matchesSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || normalizeEnum(c.complaintStatus, 'PENDING') === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || normalizeEnum(c.priority, 'LOW') === priorityFilter;
+      const matchesDepartment = departmentFilter === 'all' || c.departmentName === departmentFilter;
+      return matchesSearch && matchesStatus && matchesPriority && matchesDepartment;
+    })
+    .sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      switch (sortBy) {
+        case 'complaintStatus': {
+          // normalizeEnum handles null/object values safely before lookup
+          const aKey = normalizeEnum(a.complaintStatus, 'PENDING');
+          const bKey = normalizeEnum(b.complaintStatus, 'PENDING');
+          aVal = statusOrder[aKey] ?? 0;
+          bVal = statusOrder[bKey] ?? 0;
+          break;
+        }
+        case 'priority': {
+          const aKey = normalizeEnum(a.priority, 'LOW');
+          const bKey = normalizeEnum(b.priority, 'LOW');
+          aVal = priorityOrder[aKey] ?? 0;
+          bVal = priorityOrder[bKey] ?? 0;
+          break;
+        }
+        case 'createdAt': {
+          aVal = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          bVal = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          break;
+        }
+        case 'departmentName': {
+          aVal = (a.departmentName ?? '').toLowerCase();
+          bVal = (b.departmentName ?? '').toLowerCase();
+          break;
+        }
+        case 'title': {
+          aVal = (a.title ?? '').toLowerCase();
+          bVal = (b.title ?? '').toLowerCase();
+          break;
+        }
+        default: {
+          aVal = (a[sortBy] ?? '').toString().toLowerCase();
+          bVal = (b[sortBy] ?? '').toString().toLowerCase();
+          break;
+        }
+      }
+
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedComplaints = filteredComplaints.slice(startIndex, startIndex + itemsPerPage);
@@ -220,11 +302,33 @@ export default function WorkerDashboard() {
                   <thead className="text-left border-b text-gray-500">
                     <tr>
                       <th className="py-2 px-4">ID</th>
-                      <th className="px-4">Наслов</th>
-                      <th className="px-4">Статус</th>
-                      <th className="px-4">Приоритет</th>
-                      <th className="px-4">Оддел</th>
-                      <th className="px-4">Датум</th>
+                      <th
+                        className="px-4 cursor-pointer select-none hover:text-gray-800 transition"
+                        onClick={() => handleSort('title')}
+                      >
+                        Наслов <SortIcon column="title" />
+                      </th>
+                      <th
+                        className="px-4 cursor-pointer select-none hover:text-gray-800 transition"
+                        onClick={() => handleSort('complaintStatus')}
+                      >
+                        Статус <SortIcon column="complaintStatus" />
+                      </th>
+                      <th
+                        className="px-4 cursor-pointer select-none hover:text-gray-800 transition"
+                        onClick={() => handleSort('priority')}
+                      >
+                        Приоритет <SortIcon column="priority" />
+                      </th>
+                      <th className="px-4">
+                        Оддел
+                      </th>
+                      <th
+                        className="px-4 cursor-pointer select-none hover:text-gray-800 transition"
+                        onClick={() => handleSort('createdAt')}
+                      >
+                        Датум <SortIcon column="createdAt" />
+                      </th>
                       <th className="px-4">Акции</th>
                     </tr>
                   </thead>
