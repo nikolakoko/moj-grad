@@ -2,6 +2,8 @@ package mk.ukim.finki.mojgrad.mapper;
 
 import mk.ukim.finki.mojgrad.domain.entities.Complaint;
 import mk.ukim.finki.mojgrad.domain.entities.Department;
+import mk.ukim.finki.mojgrad.domain.entities.User;
+import mk.ukim.finki.mojgrad.dto.response.complaint.AdministrationUserResponse;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
 import mk.ukim.finki.mojgrad.dto.response.department.DepartmentResponse;
@@ -34,6 +36,17 @@ public class MyCityExtensions {
         return DepartmentResponse.builder()
                 .id(department.getId())
                 .name(department.getName())
+                .build();
+    }
+
+    public static AdministrationUserResponse userToAdministrationWorkerResponse(User user) {
+        return AdministrationUserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .status(user.getUserStatus())
+                .departmentName(user.getDepartment().getName())
+                .enabled(user.isEnabled())
                 .build();
     }
 }
