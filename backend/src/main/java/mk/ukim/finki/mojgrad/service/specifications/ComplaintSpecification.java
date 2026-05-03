@@ -43,11 +43,11 @@ public class ComplaintSpecification {
 
     private static Specification<Complaint> createdAfter(LocalDate from) {
         return (root, query, cb) -> from == null ? null
-                : cb.greaterThanOrEqualTo(root.get("createdAt"), from);
+                : cb.greaterThanOrEqualTo(root.get("createdAt"), from.atStartOfDay());
     }
 
     private static Specification<Complaint> createdBefore(LocalDate to) {
         return (root, query, cb) -> to == null ? null
-                : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+                : cb.lessThanOrEqualTo(root.get("createdAt"), to.plusDays(1).atStartOfDay());
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -76,10 +77,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
     }
 
+    @ExceptionHandler(CsvImportException.class)
+    public ResponseEntity<String> handleCsvImport(CsvImportException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
+    }
+
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<String> handleStorage(StorageException ex) {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<String> handleMaxUploadSize() {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("Uploaded file exceeds the maximum allowed size.");
     }
 
     @ExceptionHandler(Exception.class)
