@@ -50,6 +50,9 @@ dependencies {
     // Dotenv
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
+    // OpenCSV
+    implementation("org.apache.commons:commons-csv:1.11.0")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
