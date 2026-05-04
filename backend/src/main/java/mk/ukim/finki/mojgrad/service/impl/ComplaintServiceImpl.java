@@ -13,9 +13,11 @@ import mk.ukim.finki.mojgrad.dto.request.complaint.ComplaintRequest;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintResponse;
 import mk.ukim.finki.mojgrad.dto.response.complaint.ComplaintTrackingResponse;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ResourceNotFoundException;
+import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import mk.ukim.finki.mojgrad.mapper.MyCityExtensions;
 import mk.ukim.finki.mojgrad.repository.ComplaintRepository;
 import mk.ukim.finki.mojgrad.repository.DepartmentRepository;
+import mk.ukim.finki.mojgrad.repository.UserRepository;
 import mk.ukim.finki.mojgrad.service.intf.ComplaintService;
 import mk.ukim.finki.mojgrad.service.specifications.ComplaintSpecification;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,15 +39,18 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     private final ComplaintRepository complaintRepository;
     private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
     private final WebClient client;
 
     public ComplaintServiceImpl(
             ComplaintRepository complaintRepository,
             DepartmentRepository departmentRepository,
+            UserRepository userRepository,
             WebClient.Builder builder,
             @Value("${AI_API_KEY}") String apiKey) {
         this.complaintRepository = complaintRepository;
         this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
         this.client = builder
                 .baseUrl("https://generativelanguage.googleapis.com/v1beta/openai/")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
@@ -77,7 +82,6 @@ public class ComplaintServiceImpl implements ComplaintService {
 
         return MyCityExtensions.complaintToTrackingResponse(complaintRepository.save(complaint));
     }
-
 
     private ClassificationResultDTO classifyComplaint(String title, String description, List<Department> departments) {
         try {
@@ -166,8 +170,10 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public Page<ComplaintResponse> findAllByDepartment(ComplaintFilterRequest filter, Pageable pageable, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        Department department = user.getDepartment();
+        String email = ((User) authentication.getPrincipal()).getEmail();
+        User worker = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.USER_NOT_FOUND));
+        Department department = worker.getDepartment();
         return complaintRepository.findAll(ComplaintSpecification.filter(filter, department), pageable)
                 .map(MyCityExtensions::complaintToResponse);
     }
