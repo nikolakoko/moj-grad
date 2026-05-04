@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 public class AuthExceptionMessages {
 
     public static final String TOKEN_EXPIRED = "Your session has expired. Please log in again.";
-    public static final String INVALID_SIGNATURE = "Invalid authentication token.";
-    public static final String INVALID_TOKEN ="Invalid authentication token.";
-    public static final String UNSUPPORTED_TOKEN ="Unsupported authentication token.";
+    public static final String INVALID_SIGNATURE = "Invalid token signature.";
+    public static final String INVALID_TOKEN ="Invalid token.";
+    public static final String UNSUPPORTED_TOKEN ="Unsupported token.";
+    public static final String MISSING_MAIL_TOKEN = "Mail token is missing.";
 
     public static final String INVALID_CREDENTIALS = "Invalid email or password.";
     public static final String ACCOUNT_DISABLED = "Your account has been disabled.";

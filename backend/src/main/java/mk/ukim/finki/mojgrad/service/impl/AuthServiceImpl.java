@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.domain.entities.User;
 import mk.ukim.finki.mojgrad.domain.enums.UserStatus;
 import mk.ukim.finki.mojgrad.dto.request.auth.LoginRequestDTO;
+import mk.ukim.finki.mojgrad.dto.request.auth.RegisterRequestDTO;
 import mk.ukim.finki.mojgrad.dto.response.auth.AuthResponseDTO;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
@@ -38,5 +39,17 @@ public class AuthServiceImpl implements AuthService {
         String jwt = jwtService.generateToken(user);
 
         return AuthResponseDTO.fromUser(user, jwt);
+    }
+
+    @Override
+    public void registerAdministrationWorker(RegisterRequestDTO registerRequestDTO, String token) {
+        String email = jwtService.extractClaim(token, claims -> claims.get("email", String.class));
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(GlobalExceptionMessages.USER_NOT_FOUND));
+        user.setName(registerRequestDTO.name());
+        user.setPassword(registerRequestDTO.password());
+        user.setUserStatus(UserStatus.REGISTERED);
+        user.setEnabled(true);
+        userRepository.save(user);
     }
 }
