@@ -3,6 +3,7 @@ package mk.ukim.finki.mojgrad.config;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.ApiConstants;
 import mk.ukim.finki.mojgrad.filter.JWTAuthenticationFilter;
+import mk.ukim.finki.mojgrad.filter.MailTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,7 @@ public class WebSecurityConfig {
 
     private final AuthenticationProvider authenticationProvider;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
+    private final MailTokenFilter mailTokenFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -58,7 +60,8 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(mailTokenFilter, JWTAuthenticationFilter.class);
 
         return http.build();
     }
