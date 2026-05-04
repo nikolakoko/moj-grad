@@ -2,6 +2,7 @@ package mk.ukim.finki.mojgrad.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.domain.entities.User;
+import mk.ukim.finki.mojgrad.domain.enums.MailTokenPurpose;
 import mk.ukim.finki.mojgrad.domain.enums.Role;
 import mk.ukim.finki.mojgrad.domain.enums.UserStatus;
 import mk.ukim.finki.mojgrad.dto.request.user.UserEmailRequest;
@@ -9,6 +10,7 @@ import mk.ukim.finki.mojgrad.events.EditUserEvent;
 import mk.ukim.finki.mojgrad.events.InviteUserEvent;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ConflictException;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
+import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import mk.ukim.finki.mojgrad.repository.UserRepository;
 import mk.ukim.finki.mojgrad.service.intf.AdminService;
 import mk.ukim.finki.mojgrad.service.intf.JWTService;
@@ -42,7 +44,7 @@ public class AdminServiceImpl implements AdminService {
 
         userRepository.save(invitedUser);
 
-        String token = jwtService.generateMailToken(userEmailRequest.email());
+        String token = jwtService.generateMailToken(userEmailRequest.email(), MailTokenPurpose.REGISTER);
 
         InviteUserEvent event = new InviteUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);
@@ -51,11 +53,11 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void editWorker(UserEmailRequest userEmailRequest) {
 
-        if (userRepository.existsByEmail(userEmailRequest.email())) {
-            throw new ConflictException(AuthExceptionMessages.EMAIL_TAKEN);
+        if (!userRepository.existsByEmail(userEmailRequest.email())) {
+            throw new ConflictException(GlobalExceptionMessages.USER_NOT_FOUND);
         }
 
-        String token = jwtService.generateMailToken(userEmailRequest.email());
+        String token = jwtService.generateMailToken(userEmailRequest.email(), MailTokenPurpose.EDIT);
 
         EditUserEvent event = new EditUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);

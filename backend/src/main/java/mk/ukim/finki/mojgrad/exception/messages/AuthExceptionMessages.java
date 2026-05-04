@@ -20,4 +20,5 @@ public class AuthExceptionMessages {
     public static final String ACCESS_DENIED = "You do not have permission to perform this action.";
 
     public static final String EMAIL_TAKEN = "This email is already associated with an account.";
+    public static final String USER_ALREADY_REGISTERED = "User is already registered.";
 }

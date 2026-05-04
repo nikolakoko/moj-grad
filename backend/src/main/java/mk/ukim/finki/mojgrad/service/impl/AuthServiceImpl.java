@@ -7,6 +7,7 @@ import mk.ukim.finki.mojgrad.dto.request.user.EditUserRequest;
 import mk.ukim.finki.mojgrad.dto.request.auth.LoginRequest;
 import mk.ukim.finki.mojgrad.dto.request.auth.RegisterRequest;
 import mk.ukim.finki.mojgrad.dto.response.auth.AuthResponseDTO;
+import mk.ukim.finki.mojgrad.exception.exceptions.global.ConflictException;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import mk.ukim.finki.mojgrad.repository.UserRepository;
@@ -50,6 +51,9 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(GlobalExceptionMessages.USER_NOT_FOUND));
 
+        if (user.getUserStatus() == UserStatus.REGISTERED) {
+            throw new ConflictException(AuthExceptionMessages.USER_ALREADY_REGISTERED);
+        }
         user.setName(registerRequest.name());
         user.setPassword(passwordEncoder.encode(registerRequest.password()));
         user.setUserStatus(UserStatus.REGISTERED);

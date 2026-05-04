@@ -9,8 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.JWTConstants;
+import mk.ukim.finki.mojgrad.domain.enums.MailTokenPurpose;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
 import mk.ukim.finki.mojgrad.service.intf.JWTService;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -32,7 +34,7 @@ public class MailTokenFilter extends OncePerRequestFilter {
         String token = request.getHeader(JWTConstants.MAIL_TOKEN_HEADER);
         String path = request.getRequestURI();
 
-        if (path.contains("/register") || path.contains("/edit")) {
+        if (path.contains("/auth/register") || path.contains("auth/edit")) {
             try {
                 if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                     filterChain.doFilter(request, response);
@@ -50,6 +52,19 @@ public class MailTokenFilter extends OncePerRequestFilter {
                 String email = jwtService.extractClaim(token, claims -> claims.get("email", String.class));
                 if (email == null || email.isBlank()) {
                     throw new MalformedJwtException(AuthExceptionMessages.UNSUPPORTED_TOKEN);
+                }
+
+                String purposeStr = jwtService.extractClaim(token, claims -> claims.get("purpose", String.class));
+                if (purposeStr == null || purposeStr.isBlank()) {
+                    throw new MalformedJwtException(AuthExceptionMessages.UNSUPPORTED_TOKEN);
+                }
+
+                MailTokenPurpose purpose = MailTokenPurpose.valueOf(purposeStr);
+                if (path.contains("/register") && purpose != MailTokenPurpose.REGISTER) {
+                    throw new AuthorizationDeniedException(AuthExceptionMessages.ACCESS_DENIED);
+                }
+                if (path.contains("/edit") && purpose != MailTokenPurpose.EDIT) {
+                    throw new AuthorizationDeniedException(AuthExceptionMessages.ACCESS_DENIED);
                 }
 
             } catch (Exception ex) {
