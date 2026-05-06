@@ -62,9 +62,11 @@ export default function RegisterPage() {
         const msg = await response.text();
         throw new Error(msg || 'Грешка при регистрација');
       }
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setDone(true);
       toast.success('Регистрацијата е успешна!');
-      setTimeout(() => navigate('/login'), 2500);
+      navigate('/login');
     } catch (err: any) {
       toast.error(err?.message || 'Грешка при регистрација');
     } finally {
@@ -77,22 +79,7 @@ export default function RegisterPage() {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-  if (done) {
-    return (
-      <>
-        <style>{styles}</style>
-        <div className="rp-root">
-          <div className="rp-bg-blobs"><div className="rp-blob1"/><div className="rp-blob2"/></div>
-          <div className="rp-success-card rp-anim">
-            <div className="rp-success-icon"><CheckCircle size={48} strokeWidth={1.5} /></div>
-            <h2 className="rp-success-title">Добредојдовте!</h2>
-            <p className="rp-success-sub">Профилот е активиран. Ќе бидете пренасочени...</p>
-            <div className="rp-spin-wrap"><Loader2 size={18} className="rp-spin" /></div>
-          </div>
-        </div>
-      </>
-    );
-  }
+
 
   if (!mailToken) {
     return (
