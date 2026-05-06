@@ -123,4 +123,14 @@ public class GlobalExceptionHandler {
         String message = "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'";
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
     }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    public ResponseEntity<String> handleAccessDenied(ForbiddenAccessException ex) {
+
+        String message = ex.getMessage() != null
+                ? ex.getMessage()
+                : GlobalExceptionMessages.RESOURCE_ACCESS_DENIED;
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
+    }
 }
