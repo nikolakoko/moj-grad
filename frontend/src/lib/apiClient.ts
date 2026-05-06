@@ -24,5 +24,12 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
     throw new Error(errorText || "API error");
   }
 
+  const contentType = response.headers.get("content-type") ?? "";
+  const contentLength = response.headers.get("content-length");
+
+  // Return null for empty responses (e.g. 200 OK with no body)
+  if (contentLength === "0" || response.status === 204) return null;
+  if (!contentType.includes("application/json")) return null;
+
   return response.json();
 }

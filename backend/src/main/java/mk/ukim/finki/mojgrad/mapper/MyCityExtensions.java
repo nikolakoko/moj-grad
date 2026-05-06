@@ -45,7 +45,7 @@ public class MyCityExtensions {
                 .name(user.getName())
                 .email(user.getEmail())
                 .status(user.getUserStatus())
-                .departmentName(user.getDepartment().getName())
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
                 .enabled(user.isEnabled())
                 .build();
     }

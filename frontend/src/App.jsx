@@ -12,14 +12,15 @@ import DocumentUploadPage from "./pages/dashboard/DocumentUploadPage.tsx";
 import DocumentGeneratePage from "./pages/dashboard/DocumentGeneratePage.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AddWorkerPage from "./pages/admin/AddWorkerPage.tsx";
- 
+import RegisterPage from "./pages/admin/RegisterPage.tsx";
+
 function ScrollToTop() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
   return null;
 }
- 
+
 function App() {
   return (
     <BrowserRouter>
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/worker/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/upload" element={<DocumentUploadPage />} />
             <Route path="/dashboard/generate" element={<DocumentGeneratePage />} />
@@ -43,5 +45,5 @@ function App() {
     </BrowserRouter>
   );
 }
- 
+
 export default App;
