@@ -19,8 +19,9 @@ public class AdministrationWorkerController {
 
     @PatchMapping("/{complaintId}/department/{departmentId}")
     public ResponseEntity<Void> transferDepartment(@PathVariable Long complaintId,
-                                                   @PathVariable Long departmentId) {
-        administrationWorkerService.transferDepartment(complaintId, departmentId);
+                                                   @PathVariable Long departmentId,
+                                                   Authentication authentication) {
+        administrationWorkerService.transferDepartment(complaintId, departmentId, authentication);
         return ResponseEntity.ok().build();
     }
 

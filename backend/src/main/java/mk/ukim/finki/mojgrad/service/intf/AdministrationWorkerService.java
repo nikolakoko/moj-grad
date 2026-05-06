@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 public interface AdministrationWorkerService {
     Page<AdministrationUserResponse> findAdministrativeWorkers(UserFilterRequest filter, Pageable pageable);
 
-    void transferDepartment(Long complaintId, Long departmentId);
+    void transferDepartment(Long complaintId, Long departmentId, Authentication authentication);
 
     void updateStatus(Long id, ComplaintStatus status, Authentication authentication);
 

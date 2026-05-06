@@ -9,6 +9,7 @@ import mk.ukim.finki.mojgrad.domain.enums.Priority;
 import mk.ukim.finki.mojgrad.domain.enums.Role;
 import mk.ukim.finki.mojgrad.dto.request.complaint.UserFilterRequest;
 import mk.ukim.finki.mojgrad.dto.response.complaint.AdministrationUserResponse;
+import mk.ukim.finki.mojgrad.exception.exceptions.global.ForbiddenAccessException;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ResourceNotFoundException;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import mk.ukim.finki.mojgrad.repository.ComplaintRepository;
@@ -36,13 +37,21 @@ public class AdministrationWorkerServiceImpl implements AdministrationWorkerServ
     }
 
     @Override
-    public void transferDepartment(Long complaintId, Long departmentId) {
+    public void transferDepartment(Long complaintId, Long departmentId, Authentication authentication) {
 
         Complaint complaint = complaintRepository.findById(complaintId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
 
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
+
+        User worker = (User) authentication.getPrincipal();
+        Department workerDepartment = worker.getDepartment();
+
+        if (!complaint.getDepartment().getId().equals(workerDepartment.getId())) {
+            throw new ForbiddenAccessException(GlobalExceptionMessages.RESOURCE_ACCESS_DENIED);
+        }
 
         complaint.setDepartment(department);
 
@@ -59,7 +68,7 @@ public class AdministrationWorkerServiceImpl implements AdministrationWorkerServ
         Department workerDepartment = worker.getDepartment();
 
         if (!complaint.getDepartment().getId().equals(workerDepartment.getId())) {
-            throw new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_ACCESS_DENIED);
+            throw new ForbiddenAccessException(GlobalExceptionMessages.RESOURCE_ACCESS_DENIED);
         }
 
         complaint.setComplaintStatus(status);
@@ -77,7 +86,7 @@ public class AdministrationWorkerServiceImpl implements AdministrationWorkerServ
         Department workerDepartment = worker.getDepartment();
 
         if (!complaint.getDepartment().getId().equals(workerDepartment.getId())) {
-            throw new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_ACCESS_DENIED);
+            throw new ForbiddenAccessException(GlobalExceptionMessages.RESOURCE_ACCESS_DENIED);
         }
 
         complaint.setPriority(priority);
