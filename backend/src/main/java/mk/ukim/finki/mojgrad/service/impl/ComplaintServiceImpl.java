@@ -67,7 +67,7 @@ public class ComplaintServiceImpl implements ComplaintService {
         Department department = departments.stream()
                 .filter(d -> d.getName().equals(result.departmentName()))
                 .findFirst()
-                .orElse(departments.isEmpty() ? null : departments.get(0));
+                .orElse(departments.isEmpty() ? null : departments.getFirst());
 
         Complaint complaint = new Complaint();
         complaint.setTitle(request.title());
@@ -132,7 +132,7 @@ public class ComplaintServiceImpl implements ComplaintService {
             return new ClassificationResultDTO(priority, departmentName);
 
         } catch (Exception e) {
-            String fallbackDepartment = departments.isEmpty() ? "" : departments.get(0).getName();
+            String fallbackDepartment = departments.isEmpty() ? "" : departments.getFirst().getName();
             return new ClassificationResultDTO(Priority.MEDIUM, fallbackDepartment);
         }
     }
