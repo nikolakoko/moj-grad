@@ -56,4 +56,16 @@ public class AdminController {
         adminService.editWorker(userEmailRequest);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/workers/{id}/archive")
+    public ResponseEntity<Void> archiveWorker(@PathVariable Long id) {
+        adminService.archiveWorker(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/workers/{id}/unarchive")
+    public ResponseEntity<Void> unarchiveWorker(@PathVariable Long id) {
+        adminService.unarchiveWorker(id);
+        return ResponseEntity.ok().build();
+    }
 }

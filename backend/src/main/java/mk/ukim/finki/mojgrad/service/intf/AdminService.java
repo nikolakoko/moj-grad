@@ -6,4 +6,8 @@ public interface AdminService {
     void inviteWorker(UserEmailRequest userEmailRequest);
 
     void editWorker(UserEmailRequest userEmailRequest);
+
+    void archiveWorker(Long id);
+
+    void unarchiveWorker(Long id);
 }

@@ -9,6 +9,8 @@ import mk.ukim.finki.mojgrad.dto.request.user.UserEmailRequest;
 import mk.ukim.finki.mojgrad.events.EditUserEvent;
 import mk.ukim.finki.mojgrad.events.InviteUserEvent;
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ConflictException;
+import mk.ukim.finki.mojgrad.exception.exceptions.global.ForbiddenAccessException;
+import mk.ukim.finki.mojgrad.exception.exceptions.global.ResourceNotFoundException;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
 import mk.ukim.finki.mojgrad.repository.UserRepository;
@@ -61,5 +63,29 @@ public class AdminServiceImpl implements AdminService {
 
         EditUserEvent event = new EditUserEvent(userEmailRequest.email(), token);
         eventPublisher.publishEvent(event);
+    }
+
+    @Override
+    public void archiveWorker(Long id) {
+        User worker = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getRole() == Role.ADMIN)
+            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_BE_ARCHIVED);
+        if (!worker.isEnabled())
+            throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_DISABLED);
+        worker.setEnabled(false);
+        userRepository.save(worker);
+    }
+
+    @Override
+    public void unarchiveWorker(Long id) {
+        User worker = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getRole() == Role.ADMIN)
+            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_BE_ARCHIVED);
+        if (worker.isEnabled())
+            throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_ENABLED);
+        worker.setEnabled(true);
+        userRepository.save(worker);
     }
 }
