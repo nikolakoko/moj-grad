@@ -1,5 +1,7 @@
 package mk.ukim.finki.mojgrad.service.impl;
 
+import mk.ukim.finki.mojgrad.domain.entities.Department;
+import mk.ukim.finki.mojgrad.dto.request.department.DepartmentRequest;
 import mk.ukim.finki.mojgrad.dto.response.department.DepartmentResponse;
 import mk.ukim.finki.mojgrad.mapper.MyCityExtensions;
 import mk.ukim.finki.mojgrad.repository.DepartmentRepository;
@@ -21,5 +23,17 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .stream()
                 .map(MyCityExtensions::departmentToDepartmentResponse)
                 .toList();
+    }
+
+    @Override
+    public DepartmentResponse add(DepartmentRequest request) {
+        Department department = new Department();
+        department.setName(request.name());
+        return MyCityExtensions.departmentToDepartmentResponse(departmentRepository.save(department));
+    }
+
+    @Override
+    public void remove(Long id) {
+        departmentRepository.deleteById(id);
     }
 }
