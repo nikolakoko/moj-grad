@@ -68,4 +68,22 @@ public class AdminController {
         adminService.unarchiveWorker(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/workers/{workerId}/department/{departmentId}")
+    public ResponseEntity<Void> assignDepartment(@PathVariable Long workerId, @PathVariable Long departmentId) {
+        adminService.assignDepartment(workerId, departmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/workers/{workerId}/department/{departmentId}")
+    public ResponseEntity<Void> changeDepartment(@PathVariable Long workerId, @PathVariable Long departmentId) {
+        adminService.changeDepartment(workerId, departmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/workers/{workerId}/department")
+    public ResponseEntity<Void> removeDepartment(@PathVariable Long workerId) {
+        adminService.removeDepartment(workerId);
+        return ResponseEntity.ok().build();
+    }
 }

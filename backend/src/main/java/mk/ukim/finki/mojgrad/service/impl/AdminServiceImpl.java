@@ -1,6 +1,7 @@
 package mk.ukim.finki.mojgrad.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import mk.ukim.finki.mojgrad.domain.entities.Department;
 import mk.ukim.finki.mojgrad.domain.entities.User;
 import mk.ukim.finki.mojgrad.domain.enums.MailTokenPurpose;
 import mk.ukim.finki.mojgrad.domain.enums.Role;
@@ -13,6 +14,7 @@ import mk.ukim.finki.mojgrad.exception.exceptions.global.ForbiddenAccessExceptio
 import mk.ukim.finki.mojgrad.exception.exceptions.global.ResourceNotFoundException;
 import mk.ukim.finki.mojgrad.exception.messages.AuthExceptionMessages;
 import mk.ukim.finki.mojgrad.exception.messages.GlobalExceptionMessages;
+import mk.ukim.finki.mojgrad.repository.DepartmentRepository;
 import mk.ukim.finki.mojgrad.repository.UserRepository;
 import mk.ukim.finki.mojgrad.service.intf.AdminService;
 import mk.ukim.finki.mojgrad.service.intf.JWTService;
@@ -27,6 +29,7 @@ import java.util.UUID;
 public class AdminServiceImpl implements AdminService {
     private final JWTService jwtService;
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordEncoder passwordEncoder;
 
@@ -88,4 +91,46 @@ public class AdminServiceImpl implements AdminService {
         worker.setEnabled(true);
         userRepository.save(worker);
     }
+
+    @Override
+    public void assignDepartment(Long workerId, Long departmentId) {
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getRole() == Role.ADMIN)
+            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getDepartment() != null)
+            throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_HAS_DEPARTMENT);
+        worker.setDepartment(department);
+        userRepository.save(worker);
+    }
+
+    @Override
+    public void changeDepartment(Long workerId, Long departmentId) {
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getRole() == Role.ADMIN)
+            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getDepartment() == null)
+            throw new ConflictException(GlobalExceptionMessages.WORKER_HAS_NO_DEPARTMENT);
+        worker.setDepartment(department);
+        userRepository.save(worker);
+    }
+
+    @Override
+    public void removeDepartment(Long workerId) {
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+        if (worker.getRole() == Role.ADMIN)
+            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+        if (worker.getDepartment() == null)
+            throw new ConflictException(GlobalExceptionMessages.WORKER_HAS_NO_DEPARTMENT);
+        worker.setDepartment(null);
+        userRepository.save(worker);
+    }
+
+
 }

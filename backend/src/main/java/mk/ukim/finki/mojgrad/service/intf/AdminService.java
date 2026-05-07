@@ -10,4 +10,10 @@ public interface AdminService {
     void archiveWorker(Long id);
 
     void unarchiveWorker(Long id);
+
+    void assignDepartment(Long workerId, Long departmentId);
+
+    void changeDepartment(Long workerId, Long departmentId);
+
+    void removeDepartment(Long workerId);
 }
