@@ -72,11 +72,15 @@ public class AdminServiceImpl implements AdminService {
     public void archiveWorker(Long id) {
         User worker = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getRole() == Role.ADMIN)
             throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_BE_ARCHIVED);
+
         if (!worker.isEnabled())
             throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_DISABLED);
+
         worker.setEnabled(false);
+
         userRepository.save(worker);
     }
 
@@ -84,11 +88,15 @@ public class AdminServiceImpl implements AdminService {
     public void unarchiveWorker(Long id) {
         User worker = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getRole() == Role.ADMIN)
             throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_BE_ARCHIVED);
+
         if (worker.isEnabled())
             throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_ENABLED);
+
         worker.setEnabled(true);
+
         userRepository.save(worker);
     }
 
@@ -96,13 +104,18 @@ public class AdminServiceImpl implements AdminService {
     public void assignDepartment(Long workerId, Long departmentId) {
         User worker = userRepository.findById(workerId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getRole() == Role.ADMIN)
             throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getDepartment() != null)
             throw new ConflictException(GlobalExceptionMessages.WORKER_ALREADY_HAS_DEPARTMENT);
+
         worker.setDepartment(department);
+
         userRepository.save(worker);
     }
 
@@ -110,13 +123,18 @@ public class AdminServiceImpl implements AdminService {
     public void changeDepartment(Long workerId, Long departmentId) {
         User worker = userRepository.findById(workerId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getRole() == Role.ADMIN)
             throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getDepartment() == null)
             throw new ConflictException(GlobalExceptionMessages.WORKER_HAS_NO_DEPARTMENT);
+
         worker.setDepartment(department);
+
         userRepository.save(worker);
     }
 
@@ -124,11 +142,15 @@ public class AdminServiceImpl implements AdminService {
     public void removeDepartment(Long workerId) {
         User worker = userRepository.findById(workerId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
+
         if (worker.getRole() == Role.ADMIN)
             throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
+
         if (worker.getDepartment() == null)
             throw new ConflictException(GlobalExceptionMessages.WORKER_HAS_NO_DEPARTMENT);
+
         worker.setDepartment(null);
+
         userRepository.save(worker);
     }
 

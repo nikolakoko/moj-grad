@@ -27,4 +27,6 @@ public class GlobalExceptionMessages {
     public static final String WORKER_ALREADY_HAS_DEPARTMENT = "Worker already has a department assigned.";
     public static final String WORKER_HAS_NO_DEPARTMENT = "Worker does not have a department assigned.";
     public static final String ADMIN_CANNOT_HAVE_DEPARTMENT = "An admin account cannot have a department assigned.";
+
+    public static final String DEPARTMENT_ALREADY_EXISTS = "Department already exists.";
 }
