@@ -19,4 +19,8 @@ public class GlobalExceptionMessages {
 
     public static final String INTERNAL_SERVER_ERROR = "An unexpected error occurred. Please try again later.";
     public static final String RESOURCE_ACCESS_DENIED = "You don't have access to this resource.";
+
+    public static final String WORKER_ALREADY_DISABLED = "Worker account is already disabled.";
+    public static final String WORKER_ALREADY_ENABLED = "Worker account is already enabled.";
+    public static final String ADMIN_CANNOT_BE_ARCHIVED = "An admin account cannot be archived or unarchived.";
 }
