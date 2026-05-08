@@ -270,7 +270,7 @@ export default function WorkerDashboard() {
                 />
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Статус" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     <SelectItem value="all">Сите</SelectItem>
                     <SelectItem value="PENDING">На чекање</SelectItem>
                     <SelectItem value="IN_PROGRESS">Во тек</SelectItem>
@@ -280,7 +280,7 @@ export default function WorkerDashboard() {
                 </Select>
                 <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Приоритет" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     <SelectItem value="all">Сите</SelectItem>
                     <SelectItem value="LOW">Низок</SelectItem>
                     <SelectItem value="MEDIUM">Среден</SelectItem>
@@ -289,7 +289,7 @@ export default function WorkerDashboard() {
                 </Select>
                 <Select value={departmentFilter} onValueChange={(v) => { setDepartmentFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Оддел" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     <SelectItem value="all">Сите оддели</SelectItem>
                     {uniqueDepartments.map((dep) => (
                       <SelectItem key={dep} value={dep}>{dep}</SelectItem>
@@ -373,7 +373,7 @@ export default function WorkerDashboard() {
                                 <SelectTrigger className={`w-36 text-xs font-medium border ${statusColors[statusKey] ?? ''}`}>
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-white shadow-md rounded-md">
                                   <SelectItem value="PENDING">На чекање</SelectItem>
                                   <SelectItem value="IN_PROGRESS">Во тек</SelectItem>
                                   <SelectItem value="RESOLVED">Решена</SelectItem>
@@ -399,7 +399,7 @@ export default function WorkerDashboard() {
                                 <SelectTrigger className={`w-32 text-xs font-medium border ${priorityColors[priorityKey] ?? ''}`}>
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-white shadow-md rounded-md">
                                   <SelectItem value="LOW">Низок</SelectItem>
                                   <SelectItem value="MEDIUM">Среден</SelectItem>
                                   <SelectItem value="HIGH">Висок</SelectItem>
@@ -488,7 +488,7 @@ export default function WorkerDashboard() {
                   <SelectTrigger className="rounded-xl bg-gray-100">
                     <SelectValue placeholder="Одбери оддел..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     {departments.map((dep) => (
                         <SelectItem key={dep.id} value={String(dep.id)}>
                           {dep.name}

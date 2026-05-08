@@ -80,12 +80,6 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/workers/{workerId}/department/{departmentId}")
-    public ResponseEntity<Void> changeDepartment(@PathVariable Long workerId, @PathVariable Long departmentId) {
-        adminService.changeDepartment(workerId, departmentId);
-        return ResponseEntity.ok().build();
-    }
-
     @DeleteMapping("/workers/{workerId}/department")
     public ResponseEntity<Void> removeDepartment(@PathVariable Long workerId) {
         adminService.removeDepartment(workerId);
