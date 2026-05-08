@@ -120,25 +120,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void changeDepartment(Long workerId, Long departmentId) {
-        User worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
-
-        if (worker.getRole() == Role.ADMIN)
-            throw new ForbiddenAccessException(GlobalExceptionMessages.ADMIN_CANNOT_HAVE_DEPARTMENT);
-
-        Department department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));
-
-        if (worker.getDepartment() == null)
-            throw new ConflictException(GlobalExceptionMessages.WORKER_HAS_NO_DEPARTMENT);
-
-        worker.setDepartment(department);
-
-        userRepository.save(worker);
-    }
-
-    @Override
     public void removeDepartment(Long workerId) {
         User worker = userRepository.findById(workerId)
                 .orElseThrow(() -> new ResourceNotFoundException(GlobalExceptionMessages.RESOURCE_NOT_FOUND));

@@ -13,7 +13,5 @@ public interface AdminService {
 
     void assignDepartment(Long workerId, Long departmentId);
 
-    void changeDepartment(Long workerId, Long departmentId);
-
     void removeDepartment(Long workerId);
 }
