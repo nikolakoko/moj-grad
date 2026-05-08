@@ -19,4 +19,14 @@ public class GlobalExceptionMessages {
 
     public static final String INTERNAL_SERVER_ERROR = "An unexpected error occurred. Please try again later.";
     public static final String RESOURCE_ACCESS_DENIED = "You don't have access to this resource.";
+
+    public static final String WORKER_ALREADY_DISABLED = "Worker account is already disabled.";
+    public static final String WORKER_ALREADY_ENABLED = "Worker account is already enabled.";
+    public static final String ADMIN_CANNOT_BE_ARCHIVED = "An admin account cannot be archived or unarchived.";
+
+    public static final String WORKER_ALREADY_HAS_DEPARTMENT = "Worker already has a department assigned.";
+    public static final String WORKER_HAS_NO_DEPARTMENT = "Worker does not have a department assigned.";
+    public static final String ADMIN_CANNOT_HAVE_DEPARTMENT = "An admin account cannot have a department assigned.";
+
+    public static final String DEPARTMENT_ALREADY_EXISTS = "Department already exists.";
 }

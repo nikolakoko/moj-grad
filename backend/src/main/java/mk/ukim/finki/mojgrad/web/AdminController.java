@@ -5,14 +5,18 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.ApiConstants;
 import mk.ukim.finki.mojgrad.domain.enums.UserStatus;
 import mk.ukim.finki.mojgrad.dto.request.complaint.UserFilterRequest;
+import mk.ukim.finki.mojgrad.dto.request.department.DepartmentRequest;
 import mk.ukim.finki.mojgrad.dto.request.user.UserEmailRequest;
 import mk.ukim.finki.mojgrad.dto.response.complaint.AdministrationUserResponse;
+import mk.ukim.finki.mojgrad.dto.response.department.DepartmentResponse;
 import mk.ukim.finki.mojgrad.service.intf.AdminService;
 import mk.ukim.finki.mojgrad.service.intf.AdministrationWorkerService;
+import mk.ukim.finki.mojgrad.service.intf.DepartmentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +31,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final AdministrationWorkerService administrationWorkerService;
+    private final DepartmentService departmentService;
 
     @GetMapping("/workers")
     public ResponseEntity<Page<AdministrationUserResponse>> findAdministrativeWorkers(
@@ -55,5 +60,41 @@ public class AdminController {
     public ResponseEntity<Void> editWorker(@RequestBody @Valid UserEmailRequest userEmailRequest) {
         adminService.editWorker(userEmailRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/workers/{id}/archive")
+    public ResponseEntity<Void> archiveWorker(@PathVariable Long id) {
+        adminService.archiveWorker(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/workers/{id}/unarchive")
+    public ResponseEntity<Void> unarchiveWorker(@PathVariable Long id) {
+        adminService.unarchiveWorker(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/workers/{workerId}/department/{departmentId}")
+    public ResponseEntity<Void> assignDepartment(@PathVariable Long workerId, @PathVariable Long departmentId) {
+        adminService.assignDepartment(workerId, departmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/workers/{workerId}/department")
+    public ResponseEntity<Void> removeDepartment(@PathVariable Long workerId) {
+        adminService.removeDepartment(workerId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/departments/add")
+    public ResponseEntity<DepartmentResponse> addDepartment(@RequestBody @Valid DepartmentRequest request) {
+        DepartmentResponse response = departmentService.add(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/departments/{id}/remove")
+    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
+        departmentService.remove(id);
+        return ResponseEntity.noContent().build();
     }
 }
