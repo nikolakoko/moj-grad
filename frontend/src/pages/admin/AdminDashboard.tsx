@@ -23,37 +23,59 @@ export default function AdminDashboard() {
 
   const size = 10;
 
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `/admin/workers?page=${currentPage}&size=${size}&sortBy=email&direction=asc${
+        search ? `&search=${encodeURIComponent(search)}` : ""
+      }`;
+
+      const res = await apiClient(url);
+
+      setWorkers(res?.content ?? []);
+      setTotalPages(res?.totalPages ?? 1);
+    } catch (error) {
+      console.error(error);
+      setError("Грешка при вчитување на работници");
+      setWorkers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchWorkers = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const url = `/admin/workers?page=${currentPage}&size=${size}&sortBy=email&direction=asc${search ? `&search=${encodeURIComponent(search)}` : ""
-          }`;
-
-        const res = await apiClient(url);
-        setWorkers(res?.content ?? []);
-        setTotalPages(res?.totalPages ?? 1);
-
-      } catch (error: any) {
-        console.error("ERROR:", error);
-        setError("Грешка при вчитување на работници");
-        setWorkers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWorkers();
   }, [currentPage, search]);
 
-  const toggleWorker = (id: string) => {
-    setWorkers((prev) =>
-      prev.map((w) =>
-        w.id === id ? { ...w, enabled: !w.enabled } : w
-      )
-    );
+  const toggleWorker = async (worker: Worker) => {
+    const confirmMessage = worker.enabled
+      ? "Дали сте сигурни дека сакате да го архивирате работникот?"
+      : "Дали сте сигурни дека сакате да го активирате работникот?";
+
+    const confirmed = window.confirm(confirmMessage);
+
+    if (!confirmed) return;
+
+    try {
+      if (worker.enabled) {
+        await apiClient(`/admin/workers/${worker.id}/archive`, {
+          method: "PATCH",
+        });
+      } else {
+        await apiClient(`/admin/workers/${worker.id}/unarchive`, {
+          method: "PATCH",
+        });
+      }
+
+      await fetchWorkers();
+    } catch (error) {
+      console.error(error);
+      setError("Грешка при промена на статус");
+    }
   };
+
 
   const goNext = () => {
     if (currentPage + 1 < totalPages) {
@@ -213,7 +235,7 @@ export default function AdminDashboard() {
 
                         <td className="px-6 py-4 text-center">
                           <button
-                            onClick={() => toggleWorker(worker.id)}
+                            onClick={() => toggleWorker(worker)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${worker.enabled
                               ? "bg-red-50 text-red-600 hover:bg-red-100"
                               : "bg-green-50 text-green-600 hover:bg-green-100"
