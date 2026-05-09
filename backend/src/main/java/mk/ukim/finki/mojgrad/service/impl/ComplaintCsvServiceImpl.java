@@ -49,7 +49,6 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
     private static final String HEADER_STATUS      = "status";
     private static final String HEADER_DEPARTMENT  = "department";
     private static final String HEADER_CREATED_AT  = "createdAt";
-    private static final String HEADER_PHOTO       = "photo";
 
     private static final Set<String> REQUIRED_HEADERS = Set.of(
             HEADER_TITLE,
@@ -71,7 +70,6 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
             HEADER_STATUS,
             HEADER_DEPARTMENT,
             HEADER_CREATED_AT,
-            HEADER_PHOTO
     };
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
@@ -144,11 +142,6 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
                 String statusStr   = getField(record, HEADER_STATUS);
                 String deptName    = getField(record, HEADER_DEPARTMENT);
 
-                String photo = "";
-                if (actualHeaders.contains(HEADER_PHOTO)) {
-                    photo = getField(record, HEADER_PHOTO);
-                }
-
                 if (title.isBlank()) {
                     throw new CsvImportException(String.format(
                             CsvExceptionMessages.MISSING_FIELD, rowNum, HEADER_TITLE
@@ -168,12 +161,6 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
                 if (description.length() > 400) {
                     throw new CsvImportException(String.format(
                             CsvExceptionMessages.FIELD_TOO_LONG, rowNum, HEADER_DESCRIPTION, 400
-                    ));
-                }
-
-                if (photo != null && !photo.isBlank() && photo.length() > 2000) {
-                    throw new CsvImportException(String.format(
-                            CsvExceptionMessages.FIELD_TOO_LONG, rowNum, HEADER_PHOTO, 2000
                     ));
                 }
 
@@ -231,7 +218,6 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
                 complaint.setComplaintStatus(status);
                 complaint.setDepartment(workerDepartment);
                 complaint.setTrackingToken(generateTrackingToken());
-                complaint.setPhoto(photo == null || photo.isBlank() ? null : photo);
 
                 toSave.add(complaint);
                 rowNum++;
@@ -303,8 +289,7 @@ public class ComplaintCsvServiceImpl implements ComplaintCsvService {
                         c.getPriority(),
                         c.getComplaintStatus(),
                         c.getDepartment().getName(),
-                        c.getCreatedAt(),
-                        c.getPhoto()
+                        c.getCreatedAt()
                 );
             }
         } catch (IOException e) {
