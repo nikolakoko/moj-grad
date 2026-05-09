@@ -41,7 +41,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/add-worker" element={<AddWorkerPage />} />
             <Route path="/admin/departments" element={<DepartmentsPage />} />
-            <Route path="/workers/edit" element={<EditWorkerPage />} />
+            <Route path="/worker/edit" element={<EditWorkerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ComplaintProvider>
