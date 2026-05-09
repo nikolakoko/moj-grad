@@ -1,2 +1,14 @@
-# MojGrad (МојГрад)
-MojGrad (МојГрад) is a web application that allows citizens to easily submit complaints to local administration and track their status in a transparent and organized way. The system enables administrators to manage, categorize, and respond to complaints efficiently through a centralized platform. It supports both digital submissions and manual imports from phone or email reports, ensuring no issue is lost. The application is built as a modern REST API with a separate frontend, focusing on scalability and usability. Its goal is to improve communication between citizens and local authorities and streamline issue resolution.
+# MojGrad
+
+MojGrad is a web application for submitting, classifying, and tracking citizen complaints. The repository contains a Spring Boot backend, a React frontend, and database migrations for the application data model.
+
+## Deployment
+
+Azure deployment files live under [infra/README.md](C:\Users\marko\OneDrive\Desktop\mojgrad\moj-grad\infra\README.md).
+
+The chosen setup is intentionally simple:
+
+- Spring Boot backend as a Docker image on Azure Container Apps
+- React frontend on Azure Static Web Apps
+- PostgreSQL on Azure Database for PostgreSQL Flexible Server
+- GitHub Actions for dev and prod deployments

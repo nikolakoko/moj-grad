@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText, CheckCircle, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useComplaints } from '@/context/ComplaintContext';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/lib/apiClient';
 
 export default function DocumentGeneratePage() {
   const { complaints } = useComplaints();
@@ -19,7 +20,7 @@ export default function DocumentGeneratePage() {
       const token = localStorage.getItem('token');
 
       // GET /api/complaints/export — backend враќа CSV директно
-      const response = await fetch('/api/complaints/export', {
+      const response = await fetch(buildApiUrl('/complaints/export'), {
         method: 'GET',
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),

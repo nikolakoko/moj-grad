@@ -1,9 +1,13 @@
-const BASE_URL = "/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+
+export function buildApiUrl(endpoint: string) {
+  return `${API_BASE_URL}${endpoint}`;
+}
 
 export async function apiClient(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(buildApiUrl(endpoint), {
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -1,0 +1,140 @@
+name: Deploy Prod
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  APP_NAME: ${{ vars.APP_NAME || 'mojgrad' }}
+  NAME_SUFFIX: ${{ vars.NAME_SUFFIX || 'student01' }}
+  BACKEND_IMAGE_NAME: ${{ vars.BACKEND_IMAGE_NAME || 'backend' }}
+  ENVIRONMENT_NAME: prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Derive Azure resource names
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "RESOURCE_GROUP=${APP_NAME}-${ENVIRONMENT_NAME}-rg" >> "$GITHUB_ENV"
+          echo "BACKEND_CONTAINER_APP_NAME=${APP_NAME}-${ENVIRONMENT_NAME}-backend" >> "$GITHUB_ENV"
+          echo "STATIC_WEB_APP_NAME=${APP_NAME}-${ENVIRONMENT_NAME}-${NAME_SUFFIX}-swa" >> "$GITHUB_ENV"
+          echo "ACR_NAME=$(echo "${APP_NAME}${ENVIRONMENT_NAME}${NAME_SUFFIX}acr" | tr -d '-')" >> "$GITHUB_ENV"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x backend/gradlew
+
+      - name: Test backend
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: h2
+          DB_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+          DB_USERNAME: sa
+          DB_PASSWORD: ""
+          JWT_SECRET_KEY: test-secret-key-test-secret-key-test-secret-key
+          FRONTEND_URL: http://localhost:5137
+          MAIL_USERNAME: test@example.com
+          MAIL_PASSWORD: not-used-in-tests
+          AI_API_KEY: not-used-in-tests
+        run: ./gradlew test --no-daemon
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test frontend
+        working-directory: frontend
+        run: npm run test -- --passWithNoTests
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Container Apps CLI is available
+        run: az extension add --name containerapp --upgrade --yes
+
+      - name: Resolve ACR login server
+        shell: bash
+        run: |
+          set -euo pipefail
+          az acr login --name "$ACR_NAME"
+          echo "ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" --query loginServer -o tsv)" >> "$GITHUB_ENV"
+
+      - name: Build and push backend image
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE_REF="$ACR_LOGIN_SERVER/$BACKEND_IMAGE_NAME:${GITHUB_SHA}"
+          docker build -f backend/Dockerfile -t "$IMAGE_REF" backend
+          docker push "$IMAGE_REF"
+          echo "IMAGE_REF=$IMAGE_REF" >> "$GITHUB_ENV"
+
+      - name: Deploy backend to Azure Container Apps
+        shell: bash
+        run: |
+          set -euo pipefail
+          az containerapp update \
+            --name "$BACKEND_CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$IMAGE_REF"
+
+      - name: Resolve backend API base URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          BACKEND_FQDN=$(az containerapp show --name "$BACKEND_CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query properties.configuration.ingress.fqdn -o tsv)
+          echo "VITE_API_BASE_URL=https://$BACKEND_FQDN/api" >> "$GITHUB_ENV"
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
+        run: npm run build
+
+      - name: Fetch Static Web App deployment token
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SWA_DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$STATIC_WEB_APP_NAME" --resource-group "$RESOURCE_GROUP" --query properties.apiKey -o tsv)" >> "$GITHUB_ENV"
+
+      - name: Deploy frontend to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_DEPLOYMENT_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend/dist
+          output_location: ""
+          skip_app_build: true
+          skip_api_build: true

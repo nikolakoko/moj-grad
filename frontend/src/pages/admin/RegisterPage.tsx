@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '../../assets/mojgradLogo.png';
+import { buildApiUrl } from '@/lib/apiClient';
 
 // Decode JWT payload without library
 function parseJwt(token: string) {
@@ -53,7 +54,7 @@ export default function RegisterPage() {
     setErrors({});
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(buildApiUrl('/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Mail-Token': mailToken },
         body: JSON.stringify({ name: formData.name.trim(), password: formData.password }),

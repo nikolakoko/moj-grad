@@ -8,6 +8,7 @@ import React, {
 import { jwtDecode } from "jwt-decode";
 import { User } from "@/types";
 import type { UserRole } from "@/types";
+import { buildApiUrl } from "@/lib/apiClient";
 
 interface JwtPayload {
   sub: string;
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   ): Promise<boolean> => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(buildApiUrl("/auth/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

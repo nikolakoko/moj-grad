@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mk.ukim.finki.mojgrad.constants.ApiConstants;
 import mk.ukim.finki.mojgrad.filter.JWTAuthenticationFilter;
 import mk.ukim.finki.mojgrad.filter.MailTokenFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +33,9 @@ public class WebSecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
     private final MailTokenFilter mailTokenFilter;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,6 +48,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/h2/**",
+                                "/actuator/health/**",
                                 ApiConstants.AUTH + "/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -69,9 +75,15 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5137"));
+        config.setAllowedOrigins(
+                Stream.of(frontendUrl, "http://localhost:5137")
+                        .filter(origin -> origin != null && !origin.isBlank())
+                        .distinct()
+                        .toList()
+        );
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control", "Mail-Token", "Accept"));
+        config.setExposedHeaders(List.of("Content-Disposition"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 

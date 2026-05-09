@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, CheckCircle, AlertCircle, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useComplaints } from '@/context/ComplaintContext';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/lib/apiClient';
 
 export default function DocumentUploadPage() {
   const { fetchComplaints } = useComplaints();
@@ -40,7 +41,7 @@ export default function DocumentUploadPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/complaints/import', {
+      const response = await fetch(buildApiUrl('/complaints/import'), {
         method: 'POST',
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
