@@ -259,7 +259,7 @@ export default function AdminDashboard() {
                         workers.map((worker) => (
                             <tr key={worker.id} className="border-b hover:bg-gray-50 transition">
                               <td className="px-6 py-4 font-medium text-gray-900">
-                                {worker.name ?? "Нема ime"}
+                                {worker.name ?? "/"}
                               </td>
 
                               <td className="px-6 py-4 text-gray-600">{worker.email}</td>

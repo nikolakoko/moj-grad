@@ -13,10 +13,12 @@ import DocumentGeneratePage from "./pages/dashboard/DocumentGeneratePage.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AddWorkerPage from "./pages/admin/AddWorkerPage.tsx";
 import RegisterPage from "./pages/admin/RegisterPage.tsx";
+import DepartmentsPage from "./pages/admin/DepartmentsPage.tsx";
+import EditWorkerPage from "./pages/admin/EditWorkerPage.tsx";
 
 function ScrollToTop() {
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
   return null;
 }
@@ -38,6 +40,8 @@ function App() {
             <Route path="/dashboard/generate" element={<DocumentGeneratePage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/add-worker" element={<AddWorkerPage />} />
+            <Route path="/admin/departments" element={<DepartmentsPage />} />
+            <Route path="/workers/edit" element={<EditWorkerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ComplaintProvider>
