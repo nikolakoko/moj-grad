@@ -11,6 +11,11 @@ interface Worker {
   departmentName?: string;
 }
 
+interface Department {
+  id: number;
+  name: string;
+}
+
 export default function AdminDashboard() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(false);
@@ -21,6 +26,13 @@ export default function AdminDashboard() {
 
   const [search, setSearch] = useState("");
 
+  // Department modal state
+  const [departmentModalWorker, setDepartmentModalWorker] = useState<Worker | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
+  const [departmentLoading, setDepartmentLoading] = useState(false);
+  const [departmentError, setDepartmentError] = useState<string | null>(null);
+
   const size = 10;
 
   const fetchWorkers = async () => {
@@ -29,7 +41,7 @@ export default function AdminDashboard() {
       setError(null);
 
       const url = `/admin/workers?page=${currentPage}&size=${size}&sortBy=email&direction=asc${
-        search ? `&search=${encodeURIComponent(search)}` : ""
+          search ? `&search=${encodeURIComponent(search)}` : ""
       }`;
 
       const res = await apiClient(url);
@@ -45,30 +57,34 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const res = await apiClient("/departments/list");
+      setDepartments(res ?? []);
+    } catch (error) {
+      console.error(error);
+      setDepartments([]);
+    }
+  };
+
   useEffect(() => {
     fetchWorkers();
   }, [currentPage, search]);
 
   const toggleWorker = async (worker: Worker) => {
     const confirmMessage = worker.enabled
-      ? "Дали сте сигурни дека сакате да го архивирате работникот?"
-      : "Дали сте сигурни дека сакате да го активирате работникот?";
+        ? "Дали сте сигурни дека сакате да го архивирате работникот?"
+        : "Дали сте сигурни дека сакате да го активирате работникот?";
 
     const confirmed = window.confirm(confirmMessage);
-
     if (!confirmed) return;
 
     try {
       if (worker.enabled) {
-        await apiClient(`/admin/workers/${worker.id}/archive`, {
-          method: "PATCH",
-        });
+        await apiClient(`/admin/workers/${worker.id}/archive`, { method: "PATCH" });
       } else {
-        await apiClient(`/admin/workers/${worker.id}/unarchive`, {
-          method: "PATCH",
-        });
+        await apiClient(`/admin/workers/${worker.id}/unarchive`, { method: "PATCH" });
       }
-
       await fetchWorkers();
     } catch (error) {
       console.error(error);
@@ -76,206 +92,350 @@ export default function AdminDashboard() {
     }
   };
 
+  const openDepartmentModal = async (worker: Worker) => {
+    setDepartmentModalWorker(worker);
+    setSelectedDepartmentId("");
+    setDepartmentError(null);
+    await fetchDepartments();
+  };
+
+  const closeDepartmentModal = () => {
+    setDepartmentModalWorker(null);
+    setSelectedDepartmentId("");
+    setDepartmentError(null);
+  };
+
+  const handleAssignDepartment = async () => {
+    if (!departmentModalWorker || !selectedDepartmentId) return;
+
+    try {
+      setDepartmentLoading(true);
+      setDepartmentError(null);
+      await apiClient(
+          `/admin/workers/${departmentModalWorker.id}/department/${selectedDepartmentId}`,
+          { method: "PATCH" }
+      );
+      closeDepartmentModal();
+      await fetchWorkers();
+    } catch (error) {
+      console.error(error);
+      setDepartmentError("Грешка при доделување на оддел");
+    } finally {
+      setDepartmentLoading(false);
+    }
+  };
+
+  const handleRemoveDepartment = async () => {
+    if (!departmentModalWorker) return;
+
+    const confirmed = window.confirm(
+        "Дали сте сигурни дека сакате да го отстраните одделот од овој работник?"
+    );
+    if (!confirmed) return;
+
+    try {
+      setDepartmentLoading(true);
+      setDepartmentError(null);
+      await apiClient(`/admin/workers/${departmentModalWorker.id}/department`, {
+        method: "DELETE",
+      });
+      closeDepartmentModal();
+      await fetchWorkers();
+    } catch (error) {
+      console.error(error);
+      setDepartmentError("Грешка при отстранување на оддел");
+    } finally {
+      setDepartmentLoading(false);
+    }
+  };
+
+  const handleRequestUpdate = async (worker: Worker) => {
+    const confirmed = window.confirm(
+        `Дали сте сигурни дека сакате да му испратите барање за ажурирање на податоци на ${worker.name ?? worker.email}?`
+    );
+    if (!confirmed) return;
+
+    try {
+      await apiClient("/admin/workers/edit", {
+        method: "POST",
+        body: JSON.stringify({ email: worker.email }),
+      });
+      alert("Барањето е успешно испратено!");
+    } catch (error) {
+      console.error(error);
+      alert("Грешка при испраќање на барањето");
+    }
+  };
 
   const goNext = () => {
-    if (currentPage + 1 < totalPages) {
-      setCurrentPage((p) => p + 1);
-    }
+    if (currentPage + 1 < totalPages) setCurrentPage((p) => p + 1);
   };
 
   const goPrev = () => {
-    if (currentPage > 0) {
-      setCurrentPage((p) => p - 1);
-    }
+    if (currentPage > 0) setCurrentPage((p) => p - 1);
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <DashboardSidebar />
+      <div className="flex min-h-screen bg-gray-100">
+        <DashboardSidebar />
 
-      <div className="flex-1 p-8 overflow-auto">
-        {/* HEADER */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Административни работници
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Управување со административни корисници
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-          <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
-            <p className="text-base text-gray-500">
-              👥 Вкупно работници
-            </p>
-            <h2 className="text-4xl font-bold text-gray-900 mt-3">
-              {workers.length}
-            </h2>
+        <div className="flex-1 p-8 overflow-auto">
+          {/* HEADER */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Административни работници</h1>
+            <p className="text-gray-500 mt-1">Управување со административни корисници</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
-            <p className="text-base text-gray-500">
-              ✅ Активни
-            </p>
-            <h2 className="text-4xl font-bold text-green-600 mt-3">
-              {workers.filter((w) => w.enabled).length}
-            </h2>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
-            <p className="text-base text-gray-500">
-              📩 Поканети
-            </p>
-            <h2 className="text-4xl font-bold text-yellow-500 mt-3">
-              {workers.filter((w) => w.status === "INVITED").length}
-            </h2>
-          </div>
-
-        </div>
-
-        {/* SEARCH */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Пребарај по име или email..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(0);
-            }}
-            className="w-full max-w-md px-4 py-2 border rounded-xl bg-white"
-          />
-        </div>
-
-        {/* LOADING */}
-        {loading && (
-          <div className="bg-white rounded-xl shadow p-6 text-center">
-            Вчитување...
-          </div>
-        )}
-
-        {/* ERROR */}
-        {error && (
-          <div className="bg-red-50 text-red-600 rounded-xl p-4 mb-6">
-            {error}
-            <p className="text-xs mt-1 text-red-400">
-              Забелешка: Бекендот мора да дозволи ADMIN пристап до /api/administration-worker
-              (hasAnyRole во WebSecurityConfig.java).
-            </p>
-          </div>
-        )}
-
-        {/* TABLE */}
-        {!loading && !error && (
-          <div className="bg-white rounded-2xl shadow overflow-hidden">
-            <div className="px-6 py-4 border-b">
-              <h2 className="font-semibold text-lg">
-                Листа на работници
+          {/* STATS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
+              <p className="text-base text-gray-500">👥 Вкупно работници</p>
+              <h2 className="text-4xl font-bold text-gray-900 mt-3">{workers.length}</h2>
+            </div>
+            <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
+              <p className="text-base text-gray-500">✅ Активни</p>
+              <h2 className="text-4xl font-bold text-green-600 mt-3">
+                {workers.filter((w) => w.enabled).length}
               </h2>
             </div>
+            <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
+              <p className="text-base text-gray-500">📩 Поканети</p>
+              <h2 className="text-4xl font-bold text-yellow-500 mt-3">
+                {workers.filter((w) => w.status === "INVITED").length}
+              </h2>
+            </div>
+          </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b text-gray-600">
-                  <tr>
-                    <th className="text-left px-6 py-4">Име</th>
-                    <th className="text-left px-6 py-4">Email</th>
-                    <th className="text-left px-6 py-4">Оддел</th>
-                    <th className="text-left px-6 py-4">Статус</th>
-                    <th className="text-left px-6 py-4">Активен</th>
-                    <th className="text-center px-6 py-4">Акции</th>
-                  </tr>
-                </thead>
+          {/* SEARCH */}
+          <div className="mb-6">
+            <input
+                type="text"
+                placeholder="Пребарај по ime или email..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="w-full max-w-md px-4 py-2 border rounded-xl bg-white"
+            />
+          </div>
 
-                <tbody>
-                  {workers.length === 0 ? (
+          {loading && (
+              <div className="bg-white rounded-xl shadow p-6 text-center">Вчитување...</div>
+          )}
+
+          {error && (
+              <div className="bg-red-50 text-red-600 rounded-xl p-4 mb-6">{error}</div>
+          )}
+
+          {/* TABLE */}
+          {!loading && !error && (
+              <div className="bg-white rounded-2xl shadow overflow-hidden">
+                <div className="px-6 py-4 border-b">
+                  <h2 className="font-semibold text-lg">Листа на работници</h2>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b text-gray-600">
                     <tr>
-                      <td colSpan={6} className="text-center py-10 text-gray-500">
-                        Нема работници
-                      </td>
+                      <th className="text-left px-6 py-4">Ime</th>
+                      <th className="text-left px-6 py-4">Email</th>
+                      <th className="text-left px-6 py-4">Оддел</th>
+                      <th className="text-left px-6 py-4">Статус</th>
+                      <th className="text-left px-6 py-4">Активен</th>
+                      <th className="text-center px-6 py-4">Акции</th>
                     </tr>
-                  ) : (
-                    workers.map((worker) => (
-                      <tr key={worker.id} className="border-b hover:bg-gray-50 transition">
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                          {worker.name ?? "Нема име"}
-                        </td>
+                    </thead>
 
-                        <td className="px-6 py-4 text-gray-600">
-                          {worker.email}
-                        </td>
+                    <tbody>
+                    {workers.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-10 text-gray-500">
+                            Нема работници
+                          </td>
+                        </tr>
+                    ) : (
+                        workers.map((worker) => (
+                            <tr key={worker.id} className="border-b hover:bg-gray-50 transition">
+                              <td className="px-6 py-4 font-medium text-gray-900">
+                                {worker.name ?? "Нема ime"}
+                              </td>
 
-                        <td className="px-6 py-4 text-gray-600">
-                          {worker.departmentName ?? "Не е доделен"}
-                        </td>
+                              <td className="px-6 py-4 text-gray-600">{worker.email}</td>
 
-                        <td className="px-6 py-4">
+                              {/* DEPARTMENT CELL - clickable */}
+                              <td className="px-6 py-4">
+                                <button
+                                    onClick={() => openDepartmentModal(worker)}
+                                    className="text-left group"
+                                >
+                                  {worker.departmentName ? (
+                                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 group-hover:bg-blue-100 transition">
+                                {worker.departmentName}
+                              </span>
+                                  ) : (
+                                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 group-hover:bg-gray-200 transition">
+                                + Додели оддел
+                              </span>
+                                  )}
+                                </button>
+                              </td>
+
+                              <td className="px-6 py-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${worker.status === "REGISTERED"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-yellow-100 text-yellow-700"
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  worker.status === "REGISTERED"
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-yellow-100 text-yellow-700"
                               }`}
                           >
-                            {worker.status === "REGISTERED"
-                              ? "Регистриран"
-                              : "Поканет"}
+                            {worker.status === "REGISTERED" ? "Регистриран" : "Поканет"}
                           </span>
-                        </td>
+                              </td>
 
-                        <td className="px-6 py-4">
+                              <td className="px-6 py-4">
                           <span
-                            className={`font-medium ${worker.enabled ? "text-green-600" : "text-red-500"
+                              className={`font-medium ${
+                                  worker.enabled ? "text-green-600" : "text-red-500"
                               }`}
                           >
                             {worker.enabled ? "Да" : "Не"}
                           </span>
-                        </td>
+                              </td>
 
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => toggleWorker(worker)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${worker.enabled
-                              ? "bg-red-50 text-red-600 hover:bg-red-100"
-                              : "bg-green-50 text-green-600 hover:bg-green-100"
-                              }`}
-                          >
-                            {worker.enabled ? "Архивирај" : "Активирај"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                              <td className="px-6 py-4 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                      onClick={() => handleRequestUpdate(worker)}
+                                      className="px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                  >
+                                    Барај ажурирање
+                                  </button>
+                                  <button
+                                      onClick={() => toggleWorker(worker)}
+                                      className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                                          worker.enabled
+                                              ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                              : "bg-green-50 text-green-600 hover:bg-green-100"
+                                      }`}
+                                  >
+                                    {worker.enabled ? "Архивирај" : "Активирај"}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                        ))
+                    )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+          )}
 
-        {/* PAGINATION */}
-        <div className="flex justify-center items-center gap-3 mt-6">
-          <button
-            className="px-4 py-2 rounded-xl border bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
-            disabled={currentPage === 0}
-            onClick={goPrev}
-          >
-            Претходна
-          </button>
-
-          <span className="text-sm">
+          {/* PAGINATION */}
+          <div className="flex justify-center items-center gap-3 mt-6">
+            <button
+                className="px-4 py-2 rounded-xl border bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
+                disabled={currentPage === 0}
+                onClick={goPrev}
+            >
+              Претходна
+            </button>
+            <span className="text-sm">
             Страна {currentPage + 1} / {totalPages}
           </span>
-
-          <button
-            className="px-4 py-2 rounded-xl border bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
-            disabled={currentPage + 1 >= totalPages}
-            onClick={goNext}
-          >
-            Следна
-          </button>
+            <button
+                className="px-4 py-2 rounded-xl border bg-white text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
+                disabled={currentPage + 1 >= totalPages}
+                onClick={goNext}
+            >
+              Следна
+            </button>
+          </div>
         </div>
+
+        {/* DEPARTMENT MODAL */}
+        {departmentModalWorker && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Управување со оддел
+                  </h3>
+                  <button
+                      onClick={closeDepartmentModal}
+                      className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  Работник:{" "}
+                  <span className="font-medium text-gray-800">
+                {departmentModalWorker.name ?? departmentModalWorker.email}
+              </span>
+                </p>
+
+                {departmentModalWorker.departmentName && (
+                    <div className="bg-blue-50 rounded-xl px-4 py-3 mb-4 flex justify-between items-center">
+                <span className="text-sm text-blue-700">
+                  Тековен оддел:{" "}
+                  <span className="font-semibold">{departmentModalWorker.departmentName}</span>
+                </span>
+                      <button
+                          onClick={handleRemoveDepartment}
+                          disabled={departmentLoading}
+                          className="text-xs text-red-500 hover:text-red-700 font-medium transition disabled:opacity-50"
+                      >
+                        Отстрани
+                      </button>
+                    </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {departmentModalWorker.departmentName ? "Промени оддел" : "Додели оддел"}
+                  </label>
+                  <select
+                      value={selectedDepartmentId}
+                      onChange={(e) => setSelectedDepartmentId(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  >
+                    <option value="">— Избери оддел —</option>
+                    {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </option>
+                    ))}
+                  </select>
+                </div>
+
+                {departmentError && (
+                    <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-2 mb-4">
+                      {departmentError}
+                    </div>
+                )}
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                      onClick={closeDepartmentModal}
+                      className="px-4 py-2 rounded-xl border text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    Откажи
+                  </button>
+                  <button
+                      onClick={handleAssignDepartment}
+                      disabled={!selectedDepartmentId || departmentLoading}
+                      className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition disabled:opacity-40"
+                  >
+                    {departmentLoading ? "Се зачувува..." : "Зачувај"}
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
       </div>
-    </div>
   );
 }
