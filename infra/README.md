@@ -38,6 +38,14 @@ Per environment (`dev` or `prod`), Terraform creates:
 - 1 PostgreSQL database inside that server
 - Firewall rules for Azure-hosted access, plus an optional rule for your own public IP
 
+Region notes for this repository:
+
+- `location` is the primary region for the resource group, Container Apps, ACR, and Log Analytics.
+- `postgres_location` is separate because some student subscriptions reject PostgreSQL in `westeurope`.
+- `static_web_app_location` is separate because Azure Static Web Apps is only available in a limited region set, and the service rejected `swedencentral` for this repo.
+- Current defaults are tuned for the reported student-subscription behavior:
+  `location = "swedencentral"`, `postgres_location = "swedencentral"`, `static_web_app_location = "westeurope"`.
+
 ## Cost notes
 
 These defaults are chosen to stay friendly to a student Azure credit budget:
@@ -82,6 +90,7 @@ Update these values in `dev.tfvars` and `prod.tfvars` before you apply:
 
 - `subscription_id`
 - `name_suffix`
+- `location`, `postgres_location`, and `static_web_app_location` only if you intentionally want different regions
 - `db_admin_password`
 - `jwt_secret`
 - `ai_api_key`
@@ -183,6 +192,7 @@ terraform destroy -var-file="prod.tfvars"
 - If GitHub Actions cannot deploy the SPA, verify the Azure login secret and that the workflow can call `az staticwebapp secrets list`.
 - If the backend is slow after inactivity, that is expected when `backend_min_replicas = 0`; raise it to `1` if you want fewer cold starts.
 - If PostgreSQL CPU credits run low on `B_Standard_B1ms`, move to a larger Burstable SKU such as `B_Standard_B2s`.
+- If Terraform complains about PostgreSQL availability zones after creation, that is usually Azure auto-assigning a zone. This stack ignores drift on `zone` and standby zone to avoid unnecessary updates.
 
 ## Assumptions
 

@@ -79,10 +79,13 @@ jobs:
         run: docker build -f backend/Dockerfile -t local/backend-validation:${{ github.sha }} backend
 
   deploy:
-    if: github.ref_name == 'dev'
+    if: github.ref_name == 'dev' || github.ref_name == 'azure-deploy-setup'
     runs-on: ubuntu-latest
     environment: dev
     needs: verify
+    concurrency:
+      group: azure-dev-deploy
+      cancel-in-progress: true
 
     steps:
       - name: Checkout
