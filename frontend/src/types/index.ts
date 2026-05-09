@@ -2,13 +2,10 @@ export type ComplaintStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
-export type Department =
-  | 'INFRASTRUCTURE'
-  | 'ENVIRONMENT'
-  | 'PUBLIC_SAFETY'
-  | 'UTILITIES'
-  | 'OTHER';
-
+export interface Department {
+  id: number;
+  name: string;
+}
 
 export type UserRole =
   | 'CITIZEN'
