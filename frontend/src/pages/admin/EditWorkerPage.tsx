@@ -197,7 +197,6 @@ export default function EditWorkerPage() {
         {/* Right panel */}
         <div className="rp-right">
           <div className="rp-card rp-anim">
-            <div className="rp-eyebrow">Управување со профил</div>
             <h2 className="rp-card-title">Ажурирање на податоци</h2>
             <p className="rp-card-sub">
               Ажурирање за: <strong style={{ color: '#2563eb' }}>{emailFromToken}</strong>

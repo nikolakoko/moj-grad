@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '../../assets/mojgradLogo.png';
 import { useAuth } from '@/context/AuthContext';
 
-// Decode JWT payload without library
+// Decode JWT payload without a library
 function parseJwt(token: string) {
   try {
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                 {errors.name && <span className="rp-err">{errors.name}</span>}
               </div>
 
-              {/* Email — read only, from token */}
+              {/* Email — read-only, from token */}
               <div className="rp-field">
                 <label className="rp-label">Е-маил</label>
                 <div className="rp-input-wrap">
