@@ -558,9 +558,25 @@ export default function WorkerDashboard() {
                   <div>
                     <Label>Слика</Label>
                     <img
-                      src={selectedComplaint.photo}
+                      src={
+                        selectedComplaint.photo.startsWith('http') || selectedComplaint.photo.startsWith('data:')
+                          ? selectedComplaint.photo
+                          : `data:image/jpeg;base64,${selectedComplaint.photo}`
+                      }
                       alt="Complaint"
-                      className="mt-2 rounded-lg w-full max-h-64 object-cover"
+                      className="mt-2 rounded-lg w-full object-contain cursor-zoom-in"
+                      style={{ maxHeight: 'none' }}
+                      onClick={(e) => {
+                        const src = (e.target as HTMLImageElement).src;
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;';
+                        const img = document.createElement('img');
+                        img.src = src;
+                        img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 25px 60px rgba(0,0,0,0.5);';
+                        overlay.appendChild(img);
+                        overlay.onclick = () => document.body.removeChild(overlay);
+                        document.body.appendChild(overlay);
+                      }}
                     />
                   </div>
                 )}
