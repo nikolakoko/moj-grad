@@ -64,43 +64,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (
-    email: string,
-    password: string
-  ): Promise<boolean> => {
+  const login = async (email: string, password: string) => {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const text = await response.text();
+
+    let data;
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      const { token } = data;
-
-      if (!token) return false;
-
-      localStorage.setItem("token", token);
-
-      const decoded = jwtDecode<JwtPayload>(token);
-
-      setUser({
-        id: String(decoded.id),
-        email: decoded.sub,
-        role: stripRolePrefix(decoded.role),
-        name: decoded.sub,
-        enabled: true,
-      });
-
-      return true;
-    } catch (err) {
-      console.error("Login error:", err);
-      return false;
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text };
     }
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: data.message,
+      };
+    }
+
+    const { token } = data;
+
+    localStorage.setItem("token", token);
+
+    const decoded = jwtDecode<JwtPayload>(token);
+
+    setUser({
+      id: String(decoded.id),
+      email: decoded.sub,
+      role: stripRolePrefix(decoded.role),
+      name: decoded.sub,
+      enabled: true,
+    });
+
+    return true;
   };
 
   const logout = () => {

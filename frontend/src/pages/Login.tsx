@@ -27,7 +27,7 @@ export default function LoginPage() {
     password: "",
   });
 
-  
+
   useEffect(() => {
     if (isAuthenticated && user) {
       navigate(user.role === "ADMIN" ? "/admin" : "/dashboard");
@@ -45,17 +45,15 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const success = await login(formData.email, formData.password);
+      await login(formData.email, formData.password);
 
-      if (success) {
-        toast.success("Успешно се најавивте!");
+      toast.success("Успешно се најавивте!");
+    } catch (err: any) {
+      if (err?.status === 403) {
+        toast.error("Профилот е деактивиран.");
       } else {
-        toast.error("Невалидни податоци за најава");
+        toast.error(err?.message || "Невалидни податоци за најава");
       }
-    } catch (err) {
-      toast.error("Грешка при најава");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -121,18 +119,18 @@ export default function LoginPage() {
 
               {/* BUTTON */}
               <Button
-                  type="submit"
-                  className="w-full flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
-                  disabled={isLoading}
-                  aria-busy={isLoading}
+                type="submit"
+                className="w-full flex items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={isLoading}
+                aria-busy={isLoading}
               >
                 {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Се најавува...
-                    </>
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Се најавува...
+                  </>
                 ) : (
-                    "Најави се"
+                  "Најави се"
                 )}
               </Button>
             </form>
@@ -142,8 +140,8 @@ export default function LoginPage() {
         {/* BACK */}
         <div className="mt-6 text-center">
           <a
-              href="/"
-              className="inline-block text-sm text-blue-600 hover:text-blue-800 hover:scale-110"
+            href="/"
+            className="inline-block text-sm text-blue-600 hover:text-blue-800 hover:scale-110"
           >
             ← Назад
           </a>
