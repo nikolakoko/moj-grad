@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '../../assets/mojgradLogo.png';
-import { useAuth } from '@/context/AuthContext';
 
 // Decode JWT payload without library
 function parseJwt(token: string) {
@@ -15,9 +14,8 @@ function parseJwt(token: string) {
   }
 }
 
-export default function RegisterPage() {
+export default function EditWorkerPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const [searchParams] = useSearchParams();
   const mailToken = searchParams.get('token') ?? '';
 
@@ -29,47 +27,89 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const [formData, setFormData] = useState({ name: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!formData.name.trim() || formData.name.trim().length < 2)
+
+    // Name - optional, but if filled, must be valid
+    if (formData.name.trim() && formData.name.trim().length < 2)
       e.name = 'Најмалку 2 карактери';
     if (formData.name.trim().length > 40)
       e.name = 'Најмногу 40 карактери';
-    if (!formData.password || formData.password.length < 6)
+
+    // Email - optional, but if filled, must be valid
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      e.email = 'Невалидна е-маил адреса';
+
+    // Password - optional, but if filled, must be valid + confirm must match
+    if (formData.password && formData.password.length < 6)
       e.password = 'Најмалку 6 карактери';
-    if (formData.password.length > 30)
+    if (formData.password && formData.password.length > 30)
       e.password = 'Најмногу 30 карактери';
-    if (formData.password !== formData.confirmPassword)
+    if (formData.password && formData.password !== formData.confirmPassword)
       e.confirmPassword = 'Лозинките не се совпаѓаат';
+    if (formData.confirmPassword && !formData.password)
+      e.password = 'Внесете лозинка';
+
+    // At least one field must be filled
+    if (!formData.name.trim() && !formData.email && !formData.password) {
+      e._general = 'Пополнете барем едно поле за да ажурирате';
+    }
+
     return e;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mailToken) { toast.error('Невалиден линк за регистрација'); return; }
+    if (!mailToken) {
+      toast.error('Невалиден линк за уредување');
+      return;
+    }
+
     const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     setErrors({});
     setIsLoading(true);
+
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Mail-Token': mailToken },
-        body: JSON.stringify({ name: formData.name.trim(), password: formData.password }),
+      // Build body — only send fields that are filled
+      const body: Record<string, string> = {};
+      if (formData.name.trim()) body.name = formData.name.trim();
+      if (formData.email) body.email = formData.email;
+      if (formData.password) body.password = formData.password;
+
+      const response = await fetch('/api/auth/edit', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Mail-Token': mailToken,
+        },
+        body: JSON.stringify(body),
       });
+
       if (!response.ok) {
         const msg = await response.text();
-        throw new Error(msg || 'Грешка при регистрација');
+        throw new Error(msg || 'Грешка при ажурирање');
       }
-      logout();
+
       setDone(true);
-      toast.success('Регистрацијата е успешна!');
-      navigate('/login');
+      toast.success('Податоците се успешно ажурирани!');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } catch (err: any) {
-      toast.error(err?.message || 'Грешка при регистрација');
+      toast.error(err?.message || 'Грешка при ажурирање на податоците');
     } finally {
       setIsLoading(false);
     }
@@ -78,16 +118,16 @@ export default function RegisterPage() {
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+    if (errors._general) setErrors(prev => ({ ...prev, _general: '' }));
   };
 
-
-
-  if (!mailToken) {
+  // Invalid token
+  if (!mailToken || !emailFromToken) {
     return (
       <>
         <style>{styles}</style>
         <div className="rp-root">
-          <div className="rp-bg-blobs"><div className="rp-blob1"/><div className="rp-blob2"/></div>
+          <div className="rp-bg-blobs"><div className="rp-blob1" /><div className="rp-blob2" /></div>
           <div className="rp-card rp-anim" style={{ textAlign: 'center', padding: '3rem 2.5rem', maxWidth: '420px' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⛔</div>
             <h2 className="rp-card-title" style={{ marginBottom: '0.75rem' }}>Невалиден линк</h2>
@@ -103,11 +143,36 @@ export default function RegisterPage() {
     );
   }
 
+  // Success screen
+  if (done) {
+    return (
+      <>
+        <style>{styles}</style>
+        <div className="rp-root" style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <div className="rp-bg-blobs"><div className="rp-blob1" /><div className="rp-blob2" /></div>
+          <div className="rp-success-card rp-anim">
+            <div className="rp-success-icon">
+              <CheckCircle size={44} />
+            </div>
+            <h2 className="rp-success-title">Успешно ажурирање!</h2>
+            <p className="rp-success-sub">
+              Вашите податоци се успешно зачувани.<br />
+              Ќе бидете пренасочени кон страницата за најава.
+            </p>
+            <div className="rp-spin-wrap">
+              <Loader2 size={24} className="rp-spin" />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <style>{styles}</style>
       <div className="rp-root">
-        <div className="rp-bg-blobs"><div className="rp-blob1"/><div className="rp-blob2"/></div>
+        <div className="rp-bg-blobs"><div className="rp-blob1" /><div className="rp-blob2" /></div>
 
         {/* Left panel */}
         <div className="rp-left">
@@ -117,13 +182,14 @@ export default function RegisterPage() {
             </div>
             <h1 className="rp-left-title">МојГрад</h1>
             <p className="rp-left-tag">
-              Модерен систем за прием, обработка и решавање на жалби од граѓани преку автоматизација и вештачка интелигенција
+              Ажурирање на вашите лични податоци за пристап до системот
             </p>
             <div className="rp-divider" />
             <ul className="rp-features">
-              <li><span className="rp-dot" />Пријавете проблеми во вашата општина</li>
-              <li><span className="rp-dot" />Следете го статусот на вашите пријави</li>
-              <li><span className="rp-dot" />Соработувајте со општинските служби</li>
+              <li><span className="rp-dot" />Можете да го промените вашето име</li>
+              <li><span className="rp-dot" />Можете да ја промените вашата е-маил адреса</li>
+              <li><span className="rp-dot" />Можете да ја промените вашата лозинка</li>
+              <li><span className="rp-dot" />Оставете поле празно за да не го менувате</li>
             </ul>
           </div>
         </div>
@@ -131,20 +197,30 @@ export default function RegisterPage() {
         {/* Right panel */}
         <div className="rp-right">
           <div className="rp-card rp-anim">
-            <div className="rp-eyebrow">Активирање на профил</div>
-            <h2 className="rp-card-title">Регистрација</h2>
-            <p className="rp-card-sub">Внесете ги вашите податоци за да го активирате профилот</p>
+            <div className="rp-eyebrow">Управување со профил</div>
+            <h2 className="rp-card-title">Ажурирање на податоци</h2>
+            <p className="rp-card-sub">
+              Ажурирање за: <strong style={{ color: '#2563eb' }}>{emailFromToken}</strong>
+              <br />
+              <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>
+                Оставете поле празно за да не го менувате
+              </span>
+            </p>
+
+            {errors._general && (
+              <div className="rp-general-err">{errors._general}</div>
+            )}
 
             <form onSubmit={handleSubmit} className="rp-form">
 
               {/* Name */}
               <div className="rp-field">
-                <label className="rp-label">Име</label>
+                <label className="rp-label">Ново ime <span className="rp-optional">(незадолжително)</span></label>
                 <div className="rp-input-wrap">
                   <User size={15} className="rp-icon" />
                   <input
                     type="text"
-                    placeholder="Име Презиме"
+                    placeholder="Оставете празно за да не менувате"
                     value={formData.name}
                     onChange={set('name')}
                     className={`rp-input ${errors.name ? 'rp-input-err' : ''}`}
@@ -154,30 +230,31 @@ export default function RegisterPage() {
                 {errors.name && <span className="rp-err">{errors.name}</span>}
               </div>
 
-              {/* Email — read only, from token */}
+              {/* New Email */}
               <div className="rp-field">
-                <label className="rp-label">Е-маил</label>
+                <label className="rp-label">Нова е-маил адреса <span className="rp-optional">(незадолжително)</span></label>
                 <div className="rp-input-wrap">
                   <Mail size={15} className="rp-icon" />
                   <input
                     type="email"
-                    value={emailFromToken}
-                    className="rp-input rp-input-readonly"
-                    readOnly
-                    tabIndex={-1}
+                    placeholder="Оставете празно за да не менувате"
+                    value={formData.email}
+                    onChange={set('email')}
+                    className={`rp-input ${errors.email ? 'rp-input-err' : ''}`}
+                    disabled={isLoading}
                   />
                 </div>
-                <span className="rp-hint">Е-маилот е поврзан со вашата покана</span>
+                {errors.email && <span className="rp-err">{errors.email}</span>}
               </div>
 
               {/* Password */}
               <div className="rp-field">
-                <label className="rp-label">Лозинка</label>
+                <label className="rp-label">Нова лозинка <span className="rp-optional">(незадолжително)</span></label>
                 <div className="rp-input-wrap">
                   <Lock size={15} className="rp-icon" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Минимум 6 карактери"
+                    placeholder="Оставете празно за да не менувате"
                     value={formData.password}
                     onChange={set('password')}
                     className={`rp-input ${errors.password ? 'rp-input-err' : ''}`}
@@ -192,34 +269,37 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div className="rp-field">
-                <label className="rp-label">Потврди лозинка</label>
+                <label className="rp-label">Потврди нова лозинка</label>
                 <div className="rp-input-wrap">
                   <Lock size={15} className="rp-icon" />
                   <input
                     type={showConfirm ? 'text' : 'password'}
-                    placeholder="Потврди лозинка"
+                    placeholder="Потврди нова лозинка"
                     value={formData.confirmPassword}
                     onChange={set('confirmPassword')}
                     className={`rp-input ${errors.confirmPassword ? 'rp-input-err' : ''}`}
-                    disabled={isLoading}
+                    disabled={isLoading || !formData.password}
                   />
                   <button type="button" className="rp-eye" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}>
                     {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
                 {errors.confirmPassword && <span className="rp-err">{errors.confirmPassword}</span>}
+                {!formData.password && (
+                  <span className="rp-hint">Пополнете го полето за лозинка за да можете да потврдите</span>
+                )}
               </div>
 
               <button type="submit" className="rp-submit" disabled={isLoading}>
                 {isLoading
-                  ? <><Loader2 size={16} className="rp-spin" /> Се регистрира...</>
-                  : <><span>Регистрирај се</span><ArrowRight size={16} /></>
+                  ? <><Loader2 size={16} className="rp-spin" /> Се зачувуваат...</>
+                  : <><span>Зачувај промени</span><ArrowRight size={16} /></>
                 }
               </button>
 
               <p className="rp-login-link">
-                Веќе имате профил?{' '}
-                <button type="button" onClick={() => navigate('/login')}>Најавете се</button>
+                Се откажувате?{' '}
+                <button type="button" onClick={() => navigate('/login')}>Назад кон најава</button>
               </p>
 
             </form>
@@ -256,7 +336,6 @@ const styles = `
     bottom: -100px; left: -80px;
   }
 
-  /* LEFT PANEL */
   .rp-left {
     flex: 0 0 44%;
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -287,81 +366,50 @@ const styles = `
   .rp-left-inner { position: relative; z-index: 1; max-width: 340px; }
 
   .rp-logo-wrap {
-    width: 110px;
-    height: 110px;
+    width: 110px; height: 110px;
     background: rgba(255,255,255,0.15);
     border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     margin-bottom: 1.75rem;
     backdrop-filter: blur(6px);
     border: 1px solid rgba(255,255,255,0.25);
     padding: 10px;
   }
-  .rp-logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+  .rp-logo-img { width: 100%; height: 100%; object-fit: contain; }
 
   .rp-left-title {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.75rem;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-size: 2.25rem; font-weight: 700; color: #ffffff;
+    margin: 0 0 0.75rem; line-height: 1.15; letter-spacing: -0.02em;
   }
-  .rp-left-tag {
-    color: #bfdbfe;
-    font-size: 0.875rem;
-    line-height: 1.75;
-    margin: 0 0 2rem;
-  }
+  .rp-left-tag { color: #bfdbfe; font-size: 0.875rem; line-height: 1.75; margin: 0 0 2rem; }
   .rp-divider {
     width: 44px; height: 3px;
     background: rgba(255,255,255,0.4);
-    border-radius: 99px;
-    margin-bottom: 2rem;
+    border-radius: 99px; margin-bottom: 2rem;
   }
-  .rp-features {
-    list-style: none; padding: 0; margin: 0;
-    display: flex; flex-direction: column; gap: 0.9rem;
-  }
+  .rp-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem; }
   .rp-features li {
-    color: #dbeafe;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    line-height: 1.5;
+    color: #dbeafe; font-size: 0.875rem;
+    display: flex; align-items: center; gap: 0.7rem; line-height: 1.5;
   }
   .rp-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: rgba(255,255,255,0.65);
-    flex-shrink: 0;
+    background: rgba(255,255,255,0.65); flex-shrink: 0;
   }
 
-  /* RIGHT PANEL */
   .rp-right {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 3rem 2rem;
-    position: relative;
-    z-index: 1;
+    position: relative; z-index: 1;
   }
 
-  /* CARD */
   .rp-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 20px;
     padding: 2.75rem 2.5rem;
-    width: 100%;
-    max-width: 440px;
+    width: 100%; max-width: 440px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
   }
   .rp-anim { animation: rpFadeUp 0.45s cubic-bezier(.22,.68,0,1.15) both; }
@@ -371,32 +419,27 @@ const styles = `
   }
 
   .rp-eyebrow {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #2563eb;
-    margin-bottom: 0.5rem;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #2563eb; margin-bottom: 0.5rem;
   }
   .rp-card-title {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 0.4rem;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-size: 1.875rem; font-weight: 700; color: #111827;
+    margin: 0 0 0.4rem; line-height: 1.2; letter-spacing: -0.02em;
   }
-  .rp-card-sub {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0 0 2rem;
-    line-height: 1.6;
+  .rp-card-sub { font-size: 0.875rem; color: #6b7280; margin: 0 0 1.5rem; line-height: 1.6; }
+
+  .rp-general-err {
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 10px; padding: 0.75rem 1rem;
+    font-size: 0.8rem; color: #dc2626;
+    margin-bottom: 1rem;
   }
 
-  /* FORM */
-  .rp-form { display: flex; flex-direction: column; gap: 1.2rem; }
+  .rp-form { display: flex; flex-direction: column; gap: 1.1rem; }
   .rp-field { display: flex; flex-direction: column; gap: 0.4rem; }
   .rp-label { font-size: 0.8rem; font-weight: 600; color: #374151; }
+  .rp-optional { font-weight: 400; color: #9ca3af; font-size: 0.72rem; margin-left: 4px; }
   .rp-input-wrap { position: relative; }
   .rp-icon {
     position: absolute; left: 13px; top: 50%;
@@ -416,19 +459,12 @@ const styles = `
   }
   .rp-input::placeholder { color: #c1c9d4; }
   .rp-input:focus {
-    border-color: #2563eb;
-    background: #fff;
+    border-color: #2563eb; background: #fff;
     box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
   }
   .rp-input.rp-input-err { border-color: #f87171; }
   .rp-input.rp-input-err:focus { box-shadow: 0 0 0 3px rgba(248,113,113,0.12); }
-  .rp-input-readonly {
-    background: #f3f4f6 !important;
-    color: #6b7280 !important;
-    cursor: default;
-    border-color: #e5e7eb !important;
-    box-shadow: none !important;
-  }
+  .rp-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .rp-eye {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
@@ -439,7 +475,6 @@ const styles = `
   .rp-err { font-size: 0.75rem; color: #ef4444; }
   .rp-hint { font-size: 0.72rem; color: #9ca3af; }
 
-  /* Submit */
   .rp-submit {
     height: 48px; width: 100%;
     background: #2563eb;
@@ -470,7 +505,6 @@ const styles = `
   }
   .rp-login-link button:hover { text-decoration: underline; }
 
-  /* SUCCESS */
   .rp-success-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -492,7 +526,7 @@ const styles = `
     font-size: 1.75rem; font-weight: 700; color: #111827;
     margin: 0 0 0.5rem; letter-spacing: -0.02em;
   }
-  .rp-success-sub { color: #6b7280; font-size: 0.875rem; margin: 0 0 1.5rem; }
+  .rp-success-sub { color: #6b7280; font-size: 0.875rem; margin: 0 0 1.5rem; line-height: 1.6; }
   .rp-spin-wrap { display: flex; justify-content: center; color: #2563eb; }
 
   .rp-back-btn {

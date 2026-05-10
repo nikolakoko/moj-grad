@@ -105,7 +105,6 @@ export default function WorkerDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
   const [addresses, setAddresses] = useState<Record<number, string>>({});
@@ -156,17 +155,14 @@ export default function WorkerDashboard() {
 
   const itemsPerPage = 10;
 
-  const uniqueDepartments = Array.from(
-    new Set((complaints as any[]).map((c) => c.departmentName).filter(Boolean))
-  ) as string[];
+  
 
   const filteredComplaints = (complaints as any[])
     .filter((c) => {
       const matchesSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' || normalizeEnum(c.complaintStatus, 'PENDING') === statusFilter;
       const matchesPriority = priorityFilter === 'all' || normalizeEnum(c.priority, 'LOW') === priorityFilter;
-      const matchesDepartment = departmentFilter === 'all' || c.departmentName === departmentFilter;
-      return matchesSearch && matchesStatus && matchesPriority && matchesDepartment;
+      return matchesSearch && matchesStatus && matchesPriority ;
     })
     .sort((a, b) => {
       let aVal: any;
@@ -261,7 +257,7 @@ export default function WorkerDashboard() {
           {/* FILTERS */}
           <Card className="mb-6 rounded-2xl">
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   placeholder="🔍 Пребарај по наслов..."
                   value={searchQuery}
@@ -285,15 +281,6 @@ export default function WorkerDashboard() {
                     <SelectItem value="LOW">Низок</SelectItem>
                     <SelectItem value="MEDIUM">Среден</SelectItem>
                     <SelectItem value="HIGH">Висок</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={departmentFilter} onValueChange={(v) => { setDepartmentFilter(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Оддел" /></SelectTrigger>
-                  <SelectContent className="bg-white shadow-md rounded-md">
-                    <SelectItem value="all">Сите оддели</SelectItem>
-                    {uniqueDepartments.map((dep) => (
-                      <SelectItem key={dep} value={dep}>{dep}</SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -571,9 +558,25 @@ export default function WorkerDashboard() {
                   <div>
                     <Label>Слика</Label>
                     <img
-                      src={selectedComplaint.photo}
+                      src={
+                        selectedComplaint.photo.startsWith('http') || selectedComplaint.photo.startsWith('data:')
+                          ? selectedComplaint.photo
+                          : `data:image/jpeg;base64,${selectedComplaint.photo}`
+                      }
                       alt="Complaint"
-                      className="mt-2 rounded-lg w-full max-h-64 object-cover"
+                      className="mt-2 rounded-lg w-full object-contain cursor-zoom-in"
+                      style={{ maxHeight: 'none' }}
+                      onClick={(e) => {
+                        const src = (e.target as HTMLImageElement).src;
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;';
+                        const img = document.createElement('img');
+                        img.src = src;
+                        img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 25px 60px rgba(0,0,0,0.5);';
+                        overlay.appendChild(img);
+                        overlay.onclick = () => document.body.removeChild(overlay);
+                        document.body.appendChild(overlay);
+                      }}
                     />
                   </div>
                 )}
