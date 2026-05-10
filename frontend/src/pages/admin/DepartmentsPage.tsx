@@ -104,13 +104,7 @@ export default function DepartmentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
             <p className="text-base text-gray-500">🏢 Вкупно одделенија</p>
-            <h2 className="text-4xl font-bold text-gray-900 mt-3">
-              {departments.length}
-            </h2>
-          </div>
-          <div className="bg-white rounded-2xl shadow-md p-6 min-h-[130px] flex flex-col justify-center">
-            <p className="text-base text-gray-500">✅ Активни</p>
-            <h2 className="text-4xl font-bold text-green-600 mt-3">
+            <h2 className="text-3xl font-bold text-gray-900 mt-3">
               {departments.length}
             </h2>
           </div>

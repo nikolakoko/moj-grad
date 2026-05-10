@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,8 @@ export default function LoginPage() {
       } else {
         toast.error(err?.message || "Невалидни податоци за најава");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,6 +91,7 @@ export default function LoginPage() {
                 <Input
                   type="email"
                   placeholder="example@email.com"
+                  className="placeholder:text-gray-400"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -105,7 +108,8 @@ export default function LoginPage() {
                 <Label>Лозинка</Label>
                 <Input
                   type="password"
-                  placeholder=""
+                  placeholder="••••••••"
+                  className="placeholder:text-gray-400"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData((prev) => ({

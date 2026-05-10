@@ -7,12 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import React from "react";
 import { useContext } from "react";
 import { ComplaintContext } from "../../context/ComplaintContext";
-import { ComplaintStatus, Priority } from "@/types";
 import { apiClient } from '@/lib/apiClient';
 import { toast } from "sonner";
 

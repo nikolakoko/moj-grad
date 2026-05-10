@@ -144,7 +144,7 @@ export function DashboardSidebar() {
       <div className="p-4 border-t">
         <Button
           variant="outline"
-          className="w-full flex items-center gap-2"
+          className="w-full flex items-center gap-2 rounded-lg hover:bg-blue-600 hover:text-white hover:border-blue-600"
           onClick={handleLogout}
         >
           <LogOut className="w-4 h-4" />
