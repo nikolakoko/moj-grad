@@ -19,10 +19,15 @@ repositories {
 }
 
 dependencies {
+    // Spring Boot starters
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // Database - versions managed by Spring Boot BOM
     runtimeOnly("org.postgresql:postgresql")
@@ -41,10 +46,13 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
     // OpenAPI / Swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
     // Dotenv
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
+
+    // OpenCSV
+    implementation("org.apache.commons:commons-csv:1.11.0")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

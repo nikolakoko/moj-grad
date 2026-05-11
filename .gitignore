@@ -1,3 +1,4 @@
 # Environment config
-.env
+backend/.env
 .idea
+node_modules
