@@ -65,10 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (
-    email: string,
-    password: string
-  ): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch(buildApiUrl("/auth/login"), {
         method: "POST",
