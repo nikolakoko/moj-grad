@@ -78,9 +78,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
+      const text = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
+
       if (!response.ok) return false;
 
-      const data = await response.json();
       const { token } = data;
 
       if (!token) return false;

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '../../assets/mojgradLogo.png';
+import { useAuth } from '@/context/AuthContext';
 import { buildApiUrl } from '@/lib/apiClient';
 
 // Decode JWT payload without library
@@ -17,6 +18,7 @@ function parseJwt(token: string) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [searchParams] = useSearchParams();
   const mailToken = searchParams.get('token') ?? '';
 
@@ -63,8 +65,7 @@ export default function RegisterPage() {
         const msg = await response.text();
         throw new Error(msg || 'Грешка при регистрација');
       }
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      logout();
       setDone(true);
       toast.success('Регистрацијата е успешна!');
       navigate('/login');
