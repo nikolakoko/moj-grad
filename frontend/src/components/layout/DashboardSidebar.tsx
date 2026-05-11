@@ -23,7 +23,6 @@ export function DashboardSidebar() {
     navigate("/login");
   };
 
-  
   const isAdmin = user?.role === "ADMIN";
   const isWorker = user?.role === "ADMINISTRATION_WORKER";
 
@@ -35,30 +34,22 @@ export function DashboardSidebar() {
   return (
     <div className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
 
-
       {/* LOGO */}
       <div className="p-6 border-b">
         <div className="flex items-center gap-3">
-          <img
-           src={logo} alt="МојГрад" className="w-16 h-16 object-contain"/>
-        
-      <span className="text-xl font-semibold">МојГрад</span>
-       </div>
+          <img src={logo} alt="МојГрад" className="w-16 h-16 object-contain" />
+          <span className="text-xl font-semibold">МојГрад</span>
+        </div>
       </div>
 
       {/* USER INFO */}
       <div className="p-6 border-b flex items-center gap-3">
         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <span className="text-blue-600 font-semibold">
-            {initial}
-          </span>
+          <span className="text-blue-600 font-semibold">{initial}</span>
         </div>
 
         <div className="min-w-0">
-          <p className="text-sm font-medium truncate">
-            {displayName}
-          </p>
-
+          <p className="text-sm font-medium truncate">{displayName}</p>
           <p className="text-xs text-gray-500">
             {isAdmin
               ? "Администратор"
@@ -134,16 +125,26 @@ export function DashboardSidebar() {
                 <span>Додај работник</span>
               </div>
             </Link>
+
+            <Link to="/admin/departments">
+              <div className={`flex items-center gap-3 px-4 py-2 rounded-lg ${
+                isActive("/admin/departments")
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}>
+                <Building2 className="w-5 h-5" />
+                <span>Оддел</span>
+              </div>
+            </Link>
           </>
         )}
-
       </nav>
 
       {/* LOGOUT */}
       <div className="p-4 border-t">
         <Button
           variant="outline"
-          className="w-full flex items-center gap-2"
+          className="w-full flex items-center gap-2 rounded-lg hover:bg-blue-600 hover:text-white hover:border-blue-600"
           onClick={handleLogout}
         >
           <LogOut className="w-4 h-4" />

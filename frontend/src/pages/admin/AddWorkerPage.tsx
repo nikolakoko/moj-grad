@@ -124,7 +124,7 @@ export default function AddWorkerPage() {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="rabotnik@mojgrad.mk"
-                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition"
+                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition placeholder:text-gray-400"
                       required
                     />
                   </div>

@@ -34,16 +34,25 @@ export const ComplaintContext = createContext<ComplaintContextType | undefined>(
 export function ComplaintProvider({ children }: { children: ReactNode }) {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
 
+  const { user } = useAuth();
   // ================= FETCH =================
   const fetchComplaints = async () => {
     try {
-      const res = await apiClient("/complaints/list");
+      const role = user?.role;
+
+      let res;
+      if (role === 'ADMINISTRATION_WORKER') {
+        res = await apiClient("/complaints/by-department");
+      } else {
+        res = await apiClient("/complaints/list");
+      }
 
       const data =
-        res?.data ??
-        res?.complaints ??
-        res ??
-        [];
+          res?.content ??
+          res?.data ??
+          res?.complaints ??
+          res ??
+          [];
 
       setComplaints(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -51,7 +60,6 @@ export function ComplaintProvider({ children }: { children: ReactNode }) {
       setComplaints([]);
     }
   };
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchComplaints();

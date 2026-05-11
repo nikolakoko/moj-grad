@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import React from "react";
 import { useContext } from "react";
 import { ComplaintContext } from "../../context/ComplaintContext";
+import { apiClient } from '@/lib/apiClient';
+import { toast } from "sonner";
 
 
 // ── Reverse geocode ───────────────────────────────────────────────────────────
@@ -97,12 +98,11 @@ const formatDateTime = (dateStr: string) => {
 };
 
 export default function WorkerDashboard() {
-  const { complaints = [] } = useComplaints();
+  const { complaints = [], fetchComplaints } = useComplaints();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
   const [addresses, setAddresses] = useState<Record<number, string>>({});
@@ -110,6 +110,14 @@ export default function WorkerDashboard() {
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { updateComplaint } = useContext(ComplaintContext);
+
+  const [departments, setDepartments] = useState<{id: number, name: string}[]>([]);
+  const [transferComplaint, setTransferComplaint] = useState<any | null>(null);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
+
+  useEffect(() => {
+    apiClient('/departments/list').then((data) => setDepartments(data));
+  }, []);
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -145,17 +153,14 @@ export default function WorkerDashboard() {
 
   const itemsPerPage = 10;
 
-  const uniqueDepartments = Array.from(
-    new Set((complaints as any[]).map((c) => c.departmentName).filter(Boolean))
-  ) as string[];
+  
 
   const filteredComplaints = (complaints as any[])
     .filter((c) => {
       const matchesSearch = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' || normalizeEnum(c.complaintStatus, 'PENDING') === statusFilter;
       const matchesPriority = priorityFilter === 'all' || normalizeEnum(c.priority, 'LOW') === priorityFilter;
-      const matchesDepartment = departmentFilter === 'all' || c.departmentName === departmentFilter;
-      return matchesSearch && matchesStatus && matchesPriority && matchesDepartment;
+      return matchesSearch && matchesStatus && matchesPriority ;
     })
     .sort((a, b) => {
       let aVal: any;
@@ -250,7 +255,7 @@ export default function WorkerDashboard() {
           {/* FILTERS */}
           <Card className="mb-6 rounded-2xl">
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   placeholder="🔍 Пребарај по наслов..."
                   value={searchQuery}
@@ -259,7 +264,7 @@ export default function WorkerDashboard() {
                 />
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Статус" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     <SelectItem value="all">Сите</SelectItem>
                     <SelectItem value="PENDING">На чекање</SelectItem>
                     <SelectItem value="IN_PROGRESS">Во тек</SelectItem>
@@ -269,20 +274,11 @@ export default function WorkerDashboard() {
                 </Select>
                 <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Приоритет" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md rounded-md">
                     <SelectItem value="all">Сите</SelectItem>
                     <SelectItem value="LOW">Низок</SelectItem>
                     <SelectItem value="MEDIUM">Среден</SelectItem>
                     <SelectItem value="HIGH">Висок</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={departmentFilter} onValueChange={(v) => { setDepartmentFilter(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="rounded-xl bg-gray-100"><SelectValue placeholder="Оддел" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Сите оддели</SelectItem>
-                    {uniqueDepartments.map((dep) => (
-                      <SelectItem key={dep} value={dep}>{dep}</SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -344,16 +340,69 @@ export default function WorkerDashboard() {
                               <div className="font-medium">{c.title}</div>
                               <div className="text-xs text-gray-500">📍 {addresses[c.id] ?? 'Вчитување...'}</div>
                             </td>
-                            <td className="px-4 py-4">
-                              <Badge className={statusColors[statusKey] ?? ''}>{statusLabels[statusKey] ?? statusKey}</Badge>
+                            <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                              <Select
+                                  value={statusKey}
+                                  onValueChange={async (newStatus) => {
+                                    try {
+                                      await apiClient(`/administration-worker/${c.id}/status?status=${newStatus}`, {
+                                        method: 'PATCH',
+                                      });
+                                      toast.success('Статусот е успешно променет!');
+                                      await fetchComplaints();
+                                    }catch (err:any){
+                                      toast.error(err?.message || 'Грешка при промена на статус');
+                                    }
+                                  }}
+                              >
+                                <SelectTrigger className={`w-36 text-xs font-medium border ${statusColors[statusKey] ?? ''}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white shadow-md rounded-md">
+                                  <SelectItem value="PENDING">На чекање</SelectItem>
+                                  <SelectItem value="IN_PROGRESS">Во тек</SelectItem>
+                                  <SelectItem value="RESOLVED">Решена</SelectItem>
+                                  <SelectItem value="REJECTED">Одбиена</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </td>
-                            <td className="px-4 py-4">
-                              <Badge className={priorityColors[priorityKey] ?? ''}>{priorityLabels[priorityKey] ?? priorityKey}</Badge>
+                            <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                              <Select
+                                  value={priorityKey}
+                                  onValueChange={async (newPriority) => {
+                                    try {
+                                      await apiClient(`/administration-worker/${c.id}/priority?priority=${newPriority}`, {
+                                        method: 'PATCH',
+                                      });
+                                      toast.success('Приоритетот е успешно променет!');
+                                      await fetchComplaints();
+                                    }catch (err: any){
+                                      toast.error(err?.message || 'Грешка при промена на приоритет');
+                                    }
+                                  }}
+                              >
+                                <SelectTrigger className={`w-32 text-xs font-medium border ${priorityColors[priorityKey] ?? ''}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white shadow-md rounded-md">
+                                  <SelectItem value="LOW">Низок</SelectItem>
+                                  <SelectItem value="MEDIUM">Среден</SelectItem>
+                                  <SelectItem value="HIGH">Висок</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </td>
-                            <td className="px-4 py-4">
-                              <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs border">
-                                {c.departmentName ?? '-'}
-                              </span>
+                            <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs border">
+                                  {c.departmentName ?? '-'}
+                                </span>
+                                <button
+                                    onClick={() => { setTransferComplaint(c); setSelectedDepartmentId(''); }}
+                                    className="px-2 py-1 rounded-lg text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition"
+                                >
+                                  Префрли
+                                </button>
+                              </div>
                             </td>
                             <td className="px-4 py-4 text-gray-500">
                               {new Date(c.createdAt).toLocaleDateString('mk-MK')}
@@ -397,6 +446,74 @@ export default function WorkerDashboard() {
 
         </div>
 
+
+        {/* ── TRANSFER MODAL ── */}
+        <Dialog
+            open={!!transferComplaint}
+            onOpenChange={(open) => {
+              if (!open) {
+                setTransferComplaint(null);
+                setSelectedDepartmentId('');
+              }
+            }}
+        >
+          <DialogContent className="max-w-md rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Префрли во оддел</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-gray-600">
+                Жалба: <span className="font-medium">{transferComplaint?.title}</span>
+              </p>
+
+              <div className="space-y-2">
+                <Label>Избери оддел</Label>
+                <Select value={selectedDepartmentId} onValueChange={setSelectedDepartmentId}>
+                  <SelectTrigger className="rounded-xl bg-gray-100">
+                    <SelectValue placeholder="Одбери оддел..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white shadow-md rounded-md">
+                    {departments.map((dep) => (
+                        <SelectItem key={dep.id} value={String(dep.id)}>
+                          {dep.name}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                    onClick={() => { setTransferComplaint(null); setSelectedDepartmentId(''); }}
+                    className="flex-1 px-4 py-2 rounded-xl border text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  Откажи
+                </button>
+                <button
+                    disabled={!selectedDepartmentId}
+                    onClick={async () => {
+                      try {
+                        await apiClient(`/administration-worker/${transferComplaint.id}/department/${selectedDepartmentId}`, {
+                          method: 'PATCH',
+                        });
+                        toast.success('Одделот е успешно променет!');
+                        await fetchComplaints();
+                        setTransferComplaint(null);
+                        setSelectedDepartmentId('');
+                      } catch (err: any) {
+                        toast.error(err?.message || 'Грешка при префрлување');
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition"
+                >
+                  Потврди
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* ── DETAIL MODAL ── */}
         <Dialog
           open={!!selectedComplaint}
@@ -439,9 +556,25 @@ export default function WorkerDashboard() {
                   <div>
                     <Label>Слика</Label>
                     <img
-                      src={selectedComplaint.photo}
+                      src={
+                        selectedComplaint.photo.startsWith('http') || selectedComplaint.photo.startsWith('data:')
+                          ? selectedComplaint.photo
+                          : `data:image/jpeg;base64,${selectedComplaint.photo}`
+                      }
                       alt="Complaint"
-                      className="mt-2 rounded-lg w-full max-h-64 object-cover"
+                      className="mt-2 rounded-lg w-full object-contain cursor-zoom-in"
+                      style={{ maxHeight: 'none' }}
+                      onClick={(e) => {
+                        const src = (e.target as HTMLImageElement).src;
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;';
+                        const img = document.createElement('img');
+                        img.src = src;
+                        img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 25px 60px rgba(0,0,0,0.5);';
+                        overlay.appendChild(img);
+                        overlay.onclick = () => document.body.removeChild(overlay);
+                        document.body.appendChild(overlay);
+                      }}
                     />
                   </div>
                 )}
