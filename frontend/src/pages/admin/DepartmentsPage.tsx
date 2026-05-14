@@ -18,6 +18,8 @@ export default function DepartmentsPage() {
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [deleteDepartment, setDeleteDepartment] = useState<Department | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchDepartments = async () => {
     try {
@@ -64,22 +66,32 @@ export default function DepartmentsPage() {
     }
   };
 
-  const handleDelete = async (department: Department) => {
-    const confirmed = window.confirm(
-      `Дали сте сигурни дека сакате да го избришете одделот „${department.name}"?`
-    );
-    if (!confirmed) return;
+    const handleDelete = async () => {
+        if (!deleteDepartment) return;
 
-    try {
-      await apiClient(`/admin/departments/${department.id}/remove`, {
-        method: "DELETE",
-      });
-      setDepartments((prev) => prev.filter((d) => d.id !== department.id));
-    } catch (err) {
-      console.error(err);
-      alert("Грешка при бришење на оддел");
-    }
-  };
+        try {
+            await apiClient(
+                `/admin/departments/${deleteDepartment.id}/remove`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            setDepartments((prev) =>
+                prev.filter((d) => d.id !== deleteDepartment.id)
+            );
+
+            setDeleteDepartment(null);
+        } catch (err) {
+            console.error(err);
+
+            setDeleteDepartment(null);
+
+            setDeleteError(
+                "Одделот не може да се избрише бидејќи е поврзан со корисници или жалби."
+            );
+        }
+    };
 
   const closeModal = () => {
     setShowModal(false);
@@ -178,8 +190,8 @@ export default function DepartmentsPage() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <button
-                            onClick={() => handleDelete(dept)}
-                            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition"
+                              onClick={() => setDeleteDepartment(dept)}
+                              className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition"
                           >
                             <Trash2 className="w-4 h-4" />
                             Избриши
@@ -262,6 +274,83 @@ export default function DepartmentsPage() {
           </div>
         </div>
       )}
+
+        {deleteDepartment && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Trash2 className="w-5 h-5 text-blue-600" />
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">
+                                Бришење оддел
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                Потврда за бришење
+                            </p>
+                        </div>
+                    </div>
+
+                    <p className="text-gray-700 mb-6">
+                        Дали сте сигурни дека сакате да го избришете одделот{" "}
+                        <span className="font-semibold text-gray-900">
+          „{deleteDepartment.name}“
+        </span>
+                        ?
+                    </p>
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setDeleteDepartment(null)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                        >
+                            Откажи
+                        </button>
+
+                        <button
+                            onClick={handleDelete}
+                            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition"
+                        >
+                            Избриши
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {deleteError && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center">
+                            <X className="w-5 h-5 text-blue-600" />
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">
+                                Бришењето не успеа
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                Одделот не може да се избрише
+                            </p>
+                        </div>
+                    </div>
+
+                    <p className="text-gray-700 mb-6">
+                        {deleteError}
+                    </p>
+
+                    <button
+                        onClick={() => setDeleteError(null)}
+                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition"
+                    >
+                        Во ред
+                    </button>
+                </div>
+            </div>
+        )}
     </div>
   );
 }
